@@ -17,7 +17,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
+  output:
+    ansi:
+      enabled: ALWAYS
+  messages:
+    basename: messages
+    encoding: UTF-8
 
 server:
   port: 8081
