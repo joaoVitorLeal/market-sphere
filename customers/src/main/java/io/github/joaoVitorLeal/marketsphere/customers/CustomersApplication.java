@@ -1,9 +1,15 @@
 package io.github.joaoVitorLeal.marketsphere.customers;
 
+import io.github.joaoVitorLeal.marketsphere.customers.client.BrasilApi;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
+@EnableFeignClients(
+        basePackages = "io.github.joaoVitorLeal.marketsphere.customers.client",
+        clients = BrasilApi.class
+)
 public class CustomersApplication {
 
 	public static void main(String[] args) {
