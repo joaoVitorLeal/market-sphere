@@ -1,4 +1,4 @@
-package io.github.joaoVitorLeal.marketsphere.products.controller.global;
+package io.github.joaoVitorLeal.marketsphere.products.dto.error;
 
 public record ValidationErrorDto(
         String field,
