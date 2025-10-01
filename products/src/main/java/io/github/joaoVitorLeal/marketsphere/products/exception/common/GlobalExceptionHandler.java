@@ -1,7 +1,9 @@
-package io.github.joaoVitorLeal.marketsphere.products.controller.global;
+package io.github.joaoVitorLeal.marketsphere.products.exception.common;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import io.github.joaoVitorLeal.marketsphere.products.dto.error.ErrorResponseDto;
+import io.github.joaoVitorLeal.marketsphere.products.dto.error.ValidationErrorDto;
 import io.github.joaoVitorLeal.marketsphere.products.exception.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
