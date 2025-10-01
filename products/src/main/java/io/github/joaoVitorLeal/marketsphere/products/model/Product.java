@@ -9,9 +9,9 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "products")
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class Product {
 
     @Id
