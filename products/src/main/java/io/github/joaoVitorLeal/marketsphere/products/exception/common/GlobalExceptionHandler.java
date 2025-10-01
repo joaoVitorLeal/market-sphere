@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    private static final String VALIDATION_ERROR_MESSAGE = "Validation error:";
+    private static final String VALIDATION_ERROR_MESSAGE = "Validation error.";
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error has occurred. Please try again later.\nIf the error persists, please contact our support team.";
     private static final String MALFORMED_JSON_TYPE_MESSAGE = "Malformed JSON request or invalid field type.";
 
