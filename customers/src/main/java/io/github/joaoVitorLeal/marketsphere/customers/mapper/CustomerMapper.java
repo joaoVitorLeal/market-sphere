@@ -70,14 +70,17 @@ public class CustomerMapper {
         customerToUpdate.setNationalId(customerRequestDto.nationalId());
         customerToUpdate.setEmail(customerRequestDto.email());
         customerToUpdate.setPhoneNumber(customerRequestDto.phoneNumber());
-        customerToUpdate.setAddressVo(
-                this.adaptAddress(
-                        brasilApiAddressDto,
-                        customerRequestDto.number(),
-                        customerRequestDto.complement(),
-                        customerRequestDto.country()
-                )
-        );
+
+        if (!customerToUpdate.getAddressVo().getPostalCode().equals(brasilApiAddressDto.postalCode())) {
+            customerToUpdate.setAddressVo(
+                    this.adaptAddress(
+                            brasilApiAddressDto,
+                            customerRequestDto.number(),
+                            customerRequestDto.complement(),
+                            customerRequestDto.country()
+                    )
+            );
+        }
     }
 
     private Address adaptAddress(
