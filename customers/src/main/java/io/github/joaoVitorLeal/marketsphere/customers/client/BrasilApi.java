@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(
         name = "brasilapi",
-        url = "feign.clients.brasilapi.base-url"
+        url = "${feign.clients.brasilapi.base-url}",
+        configuration = BrasilApiFeignConfig.class
 )
 public interface BrasilApi {
 
