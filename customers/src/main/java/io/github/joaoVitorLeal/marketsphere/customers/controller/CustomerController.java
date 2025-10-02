@@ -5,6 +5,7 @@ import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerRequestDto;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerResponseDto;
 import io.github.joaoVitorLeal.marketsphere.customers.service.CustomerService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,15 @@ public class CustomerController {
             @PathVariable @Positive(message = "{customer.id.positive}") Long customerId
     ) {
         service.deleteCustomerById(customerId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/{customerId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateCustomer(
+            @PathVariable @Positive(message = "{customer.id.positive}") Long customerId,
+            @RequestBody @Valid CustomerRequestDto customerRequestDto
+    ) {
+        service.updateCustomer(customerId, customerRequestDto);
         return ResponseEntity.noContent().build();
     }
 }
