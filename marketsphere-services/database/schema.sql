@@ -1,23 +1,45 @@
--- table of customer
+-- table of customers
 create table customers (
-    id serial not null primary key,
-    name varchar(200) not null,
-    cpf char(11) not null,
-    street varchar(100),
-    house_number varchar(10),
+    id serial not null,
+    full_name varchar(200) not null,
+    national_id varchar(20) not null,
+    email varchar(150) not null,
+    phone_number varchar(25) not null,
+
+    -- Embedded Address (VO)
+    postal_code varchar(20) not null,
+    street varchar(100) not null,
+    house_number varchar(10) not null,
+    complement varchar(50),
     neighborhood varchar(100),
-    email varchar(150) not null unique,
-    phone_number varchar(25) not null
+    city varchar(100) not null,
+    state varchar(100) not null,
+    country varchar(100) not null,
+
+    constraint pk_customers_id primary key (id),
+    constraint uq_customers_national_id unique (national_id),
+    constraint uq_customers_email unique (email)
 );
 
-comment on column customers.id is 'Unique identifier for the customer';
-comment on column customers.name is 'Customer''s full name';
-comment on column customers.cpf is 'Customer''s CPF number (Brazilian individual taxpayer registry)';
-comment on column customers.street is 'Customer''s street address';
-comment on column customers.house_number is 'Customer''s house number';
-comment on column customers.neighborhood is 'Customer''s neighborhood';
-comment on column customers.email is 'Customer''s email address';
-comment on column customers.phone_number is 'Customer''s phone number';
+-- Comments for better documentation
+comment on table customers is 'Customers master data, including embedded Address value object';
+
+comment on column customers.id is 'Primary key (surrogate)';
+comment on column customers.full_name is 'Customer''s full legal name';
+comment on column customers.national_id is 'Customer''s national identifier (e.g., CPF in Brazil)';
+comment on column customers.email is 'Customer''s unique email address';
+comment on column customers.phone_number is 'Customer''s phone number (may include country code)';
+
+-- Address (embedded VO)
+comment on column customers.postal_code is 'Customer''s postal code (ZIP, CEP, etc.)';
+comment on column customers.street is 'Customer''s street name';
+comment on column customers.house_number is 'Customer''s house or building number';
+comment on column customers.complement is 'Additional address info (apartment, suite, etc.)';
+comment on column customers.neighborhood is 'Customer''s neighborhood or district';
+comment on column customers.city is 'Customer''s city';
+comment on column customers.state is 'Customer''s state, province or region';
+comment on column customers.country is 'Customer''s country';
+
 
 
 -- table of products
