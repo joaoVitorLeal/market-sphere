@@ -28,7 +28,9 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable Long customerId) {
+    public ResponseEntity<CustomerResponseDto> getCustomerById(
+            @PathVariable @Positive(message = "{customer.id.positive}") Long customerId
+    ) {
         return ResponseEntity.ok(service.getCustomerById(customerId));
     }
 
