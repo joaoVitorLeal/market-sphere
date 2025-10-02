@@ -20,7 +20,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public ProductResponseDto create(ProductRequestDto dto) {
+    public ProductResponseDto createProduct(ProductRequestDto dto) {
         Product product = new Product(dto.name(), dto.unitPrice(), dto.description());
         repository.save(product);
         return new ProductResponseDto(product.getId(), product.getName(), product.getUnitPrice(), product.getDescription());
