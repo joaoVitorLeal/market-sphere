@@ -46,25 +46,3 @@ public class Order {
     @Column(name = "invoice_url", columnDefinition = "TEXT")
     private String invoiceUrl;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
