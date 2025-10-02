@@ -27,12 +27,12 @@ public class Address {
     @Column(length = 100)
     private String neighborhood;
 
-    @Column(length = 100)
+    @Column(nullable = false, length = 100)
     private String city;
 
-    @Column(length = 100)
+    @Column(nullable = false, length = 100)
     private String state;
 
-    @Column(length = 100)
+    @Column(nullable = false, length = 100)
     private String country;
 }
