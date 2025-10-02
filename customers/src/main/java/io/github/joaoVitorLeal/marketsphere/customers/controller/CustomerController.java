@@ -36,7 +36,10 @@ public class CustomerController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CustomerResponseDto>> getAllCustomers() {
-        return ResponseEntity.ok(service.getAllCustomers());
+        List<CustomerResponseDto> costumers = service.getAllCustomers();
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(costumers.size()))
+                .body(costumers);
     }
 
     @DeleteMapping("/{customerId}")
