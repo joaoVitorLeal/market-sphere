@@ -43,7 +43,9 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<Void> deleteCustomerById(Long customerId) {
+    public ResponseEntity<Void> deleteCustomerById(
+            @PathVariable @Positive(message = "{customer.id.positive}") Long customerId
+    ) {
         service.deleteCustomerById(customerId);
         return ResponseEntity.noContent().build();
     }
