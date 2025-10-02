@@ -12,7 +12,10 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Address {
 
-    @Column(name = "postal_code", nullable = false, length = 20)    private String postalCode;
+    @Column(name = "postal_code", nullable = false, length = 20)
+    private String postalCode;
+
+    @Column(nullable = false, length = 100)
     private String street;
 
     @Column(nullable = false, length = 10)
