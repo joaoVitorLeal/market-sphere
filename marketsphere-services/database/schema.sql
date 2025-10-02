@@ -58,18 +58,18 @@ comment on column products.description is 'Detailed description of the product';
 
 -- table of orders
 create table orders (
-    id bigserial not null,
-    customer_id bigint not null,
-    order_date timestamp not null default now(),
-    payment_key text,
-    observations text,
-    status varchar(30),
-    total decimal(16,2) not null,
-    tracking_code varchar(255),
-    invoice_url text,
+	id bigserial not null,
+	customer_id bigint not null,
+	order_date timestamp not null default now(),
+	payment_key text,
+	observations text,
+	status varchar(30),
+	total decimal (16,2) not null,
+	tracking_code uuid,
+	invoice_url text,
 
-    constraint pk_orders_id primary key (id),
-    constraint chk_orders_status check (
+	constraint pk_orders_id primary key (id),
+	constraint chk_orders_status check (
         status in ('PLACED', 'PAID', 'BILLED', 'SHIPPED', 'PAYMENT_ERROR', 'PREPARING_SHIPMENT')
     )
 );
@@ -88,16 +88,16 @@ comment on column orders.invoice_url is 'URL link to the invoice';
 
 -- table of order items
 create table order_items (
-    id serial not null,
-    order_id bigint not null,
-    product_id bigint not null,
-    amount int not null,
-    unit_price decimal(16,2) not null,
+	id bigserial not null,
+	order_id bigint not null ,
+	product_id bigint not null,
+	amount int not null,
+	unit_price decimal(16,2) not null,
 
-    constraint pk_order_items_id primary key (id),
-    constraint fk_order_items_order_id foreign key (order_id) references orders (id),
-    constraint chk_order_items_amount check (amount > 0),
-    constraint chk_order_items_unit_price check (unit_price >= 0)
+	constraint pk_order_items_id primary key (id),
+	constraint fk_order_items_order_id foreign key (order_id) references orders (id),
+	constraint chk_order_items_amount check (amount > 0),
+	constraint chk_order_items_unit_price check (unit_price >= 0)
 );
 
 comment on table order_items is 'Stores items of each order';
