@@ -25,6 +25,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final BrasilApi brasilApiClient;
     private final CustomerMapper mapper;
 
+    @Transactional
     @Override
     public CustomerResponseDto createCustomer(final CustomerRequestDto customerRequestDto) {
         if (repository.existsByEmail(customerRequestDto.email())) {
@@ -39,7 +40,7 @@ public class CustomerServiceImpl implements CustomerService {
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public CustomerResponseDto getCustomerById(final Long customerId) {
         return repository.findById(customerId)
@@ -47,6 +48,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new CustomerNotFoundException(customerId));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CustomerResponseDto> getAllCustomers() {
         return repository.findAll()
@@ -77,7 +79,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         // valida postalCode chamando BrasilAPI
         BrasilApiAddressDto brasilApiAddressDto = brasilApiClient.getAddressDataByPostalCode(customerRequestDto.postalCode());
-        // TODO //
+        mapper.updateCustomerEntity(customerToUpdate, customerRequestDto, brasilApiAddressDto);
     }
 
     @Transactional
