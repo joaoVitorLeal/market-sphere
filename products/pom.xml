@@ -13,19 +13,36 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>products</name>
 	<description>Products microservice for MarketSphere</description>
-	<url/>
+	<url>https://github.com/joaoVitorLeal/market-sphere</url>
+
 	<licenses>
-		<license/>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
 	</licenses>
+
 	<developers>
-		<developer/>
+		<developer>
+            <id>jv.leal.dev</id>
+            <name>João Vitor Leal de Castro</name>
+            <email>jv.leal.dev@gmail.com</email>
+            <url>https://linkedin.com/in/joaovlc</url>
+            <roles>
+                <role>developer</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
 	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
+    <scm>
+        <connection>scm:git:git://github.com/joaoVitorLeal/market-sphere.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:joaoVitorLeal/market-sphere.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/joaoVitorLeal/market-sphere</url>
+    </scm>
+
 	<properties>
 		<java.version>21</java.version>
 	</properties>
@@ -38,6 +55,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>

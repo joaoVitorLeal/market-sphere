@@ -13,22 +13,41 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>customers</name>
 	<description>Customers microservice for MarketSphere</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+    <url>https://github.com/joaoVitorLeal/market-sphere</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>jv.leal.dev</id>
+            <name>João Vitor Leal de Castro</name>
+            <email>jv.leal.dev@gmail.com</email>
+            <url>https://linkedin.com/in/joaovlc</url>
+            <roles>
+                <role>developer</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/joaoVitorLeal/market-sphere.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:joaoVitorLeal/market-sphere.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/joaoVitorLeal/market-sphere</url>
+    </scm>
+
 	<properties>
 		<java.version>21</java.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -38,6 +57,15 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -55,6 +83,17 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 	<build>
 		<plugins>
