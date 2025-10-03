@@ -1,9 +1,9 @@
 package io.github.joaoVitorLeal.marketsphere.customers.service.impl;
 
-import io.github.joaoVitorLeal.marketsphere.customers.client.BrasilApi;
+import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.BrasilApiClient;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerRequestDto;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerResponseDto;
-import io.github.joaoVitorLeal.marketsphere.customers.dto.brasilapi.BrasilApiAddressDto;
+import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.representation.BrasilApiAddressRepresentation;
 import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.customers.mapper.CustomerMapper;
 import io.github.joaoVitorLeal.marketsphere.customers.model.Customer;
@@ -21,7 +21,7 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository repository;
-    private final BrasilApi brasilApiClient;
+    private final BrasilApiClient brasilApiClient;
     private final CustomerMapper mapper;
     private final CustomerValidator validator;
 
@@ -29,9 +29,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponseDto createCustomer(final CustomerRequestDto customerRequestDto) {
         validator.validateForCreate(customerRequestDto);
-        BrasilApiAddressDto brasilApiAddressDto = brasilApiClient.getAddressDataByPostalCode(customerRequestDto.postalCode());
+        BrasilApiAddressRepresentation brasilApiAddressRepresentation = brasilApiClient.getAddressByPostalCode(customerRequestDto.postalCode());
         return mapper.toCustomerDto(
-                repository.save(mapper.toCustomerEntity(customerRequestDto, brasilApiAddressDto))
+                repository.save(mapper.toCustomerEntity(customerRequestDto, brasilApiAddressRepresentation))
         );
     }
 
@@ -60,8 +60,8 @@ public class CustomerServiceImpl implements CustomerService {
 
         validator.validateForUpdate(customerToUpdate, customerRequestDto);
         // valida postalCode chamando Brasil API
-        BrasilApiAddressDto brasilApiAddressDto = brasilApiClient.getAddressDataByPostalCode(customerRequestDto.postalCode());
-        mapper.updateCustomerEntity(customerToUpdate, customerRequestDto, brasilApiAddressDto);
+        BrasilApiAddressRepresentation brasilApiAddressRepresentation = brasilApiClient.getAddressByPostalCode(customerRequestDto.postalCode());
+        mapper.updateCustomerEntity(customerToUpdate, customerRequestDto, brasilApiAddressRepresentation);
     }
 
     @Transactional
