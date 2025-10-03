@@ -5,6 +5,7 @@ import io.github.joaoVitorLeal.marketsphere.products.dto.ProductRequestDto;
 import io.github.joaoVitorLeal.marketsphere.products.dto.ProductResponseDto;
 import io.github.joaoVitorLeal.marketsphere.products.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,9 @@ public class ProductController {
     }
 
     @GetMapping(value = "/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long productId) {
+    public ResponseEntity<ProductResponseDto> getProductById(
+            @PathVariable @Positive(message = "${product.id.positive}") Long productId
+    ) {
         return ResponseEntity.ok(service.getProductById(productId));
     }
 
