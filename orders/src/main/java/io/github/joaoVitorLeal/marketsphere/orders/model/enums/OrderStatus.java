@@ -1,4 +1,4 @@
-package io.github.joaoVitorLeal.marketsphere.orders.model;
+package io.github.joaoVitorLeal.marketsphere.orders.model.enums;
 
 public enum OrderStatus {
     PLACED,
