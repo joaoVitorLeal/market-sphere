@@ -1,4 +1,4 @@
-package io.github.joaoVitorLeal.marketsphere.customers.exception.brasilapi;
+package io.github.joaoVitorLeal.marketsphere.customers.exception.client.brasilapi;
 
 public class PostalCodeInvalidException extends RuntimeException {
     public PostalCodeInvalidException() {
