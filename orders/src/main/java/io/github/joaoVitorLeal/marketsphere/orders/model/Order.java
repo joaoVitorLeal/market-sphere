@@ -1,6 +1,7 @@
 package io.github.joaoVitorLeal.marketsphere.orders.model;
 
 
+import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -45,4 +47,10 @@ public class Order {
 
     @Column(name = "invoice_url", columnDefinition = "TEXT")
     private String invoiceUrl;
+
+    @Transient
+    private PaymentInfo paymentInfo;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems;
 }
