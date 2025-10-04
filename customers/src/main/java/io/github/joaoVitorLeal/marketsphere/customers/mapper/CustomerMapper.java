@@ -2,7 +2,7 @@ package io.github.joaoVitorLeal.marketsphere.customers.mapper;
 
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerRequestDto;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerResponseDto;
-import io.github.joaoVitorLeal.marketsphere.customers.dto.brasilapi.BrasilApiAddressDto;
+import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.representation.BrasilApiAddressRepresentation;
 import io.github.joaoVitorLeal.marketsphere.customers.model.Customer;
 import io.github.joaoVitorLeal.marketsphere.customers.model.vo.Address;
 import org.springframework.stereotype.Component;
@@ -14,10 +14,10 @@ public class CustomerMapper {
 
     public Customer toCustomerEntity(
             final CustomerRequestDto customerRequestDto,
-            final BrasilApiAddressDto brasilApiAddressDto
+            final BrasilApiAddressRepresentation brasilApiAddressRepresentation
     ) {
         Objects.requireNonNull(customerRequestDto, "CustomerRequestDto must not be null.");
-        Objects.requireNonNull(brasilApiAddressDto, "BrasilApiAddressDto must not be null.");
+        Objects.requireNonNull(brasilApiAddressRepresentation, "BrasilApiAddressDto must not be null.");
 
         Customer customer = new Customer();
         customer.setFullName(customerRequestDto.fullName());
@@ -26,7 +26,7 @@ public class CustomerMapper {
         customer.setPhoneNumber(customerRequestDto.phoneNumber());
         customer.setAddressVo(
                 this.adaptAddress(
-                        brasilApiAddressDto,
+                        brasilApiAddressRepresentation,
                         customerRequestDto.number(),
                         customerRequestDto.complement(),
                         customerRequestDto.country()
@@ -60,40 +60,43 @@ public class CustomerMapper {
     public void updateCustomerEntity(
             final Customer customerToUpdate,
             final CustomerRequestDto customerRequestDto,
-            final BrasilApiAddressDto brasilApiAddressDto
+            final BrasilApiAddressRepresentation brasilApiAddressRepresentation
     ) {
         Objects.requireNonNull(customerToUpdate, "Customer must not be null.");
         Objects.requireNonNull(customerRequestDto, "CustomerRequestDto must not be null.");
-        Objects.requireNonNull(brasilApiAddressDto, "BrasilApiAddressDto must not be null.");
+        Objects.requireNonNull(brasilApiAddressRepresentation, "BrasilApiAddressDto must not be null.");
 
         customerToUpdate.setFullName(customerRequestDto.fullName());
         customerToUpdate.setNationalId(customerRequestDto.nationalId());
         customerToUpdate.setEmail(customerRequestDto.email());
         customerToUpdate.setPhoneNumber(customerRequestDto.phoneNumber());
-        customerToUpdate.setAddressVo(
-                this.adaptAddress(
-                        brasilApiAddressDto,
-                        customerRequestDto.number(),
-                        customerRequestDto.complement(),
-                        customerRequestDto.country()
-                )
-        );
+
+        if (!customerToUpdate.getAddressVo().getPostalCode().equals(brasilApiAddressRepresentation.postalCode())) {
+            customerToUpdate.setAddressVo(
+                    this.adaptAddress(
+                            brasilApiAddressRepresentation,
+                            customerRequestDto.number(),
+                            customerRequestDto.complement(),
+                            customerRequestDto.country()
+                    )
+            );
+        }
     }
 
     private Address adaptAddress(
-            final BrasilApiAddressDto brasilApiAddressDto,
+            final BrasilApiAddressRepresentation brasilApiAddressRepresentation,
             final String number,
             final String complement,
             final String country
     ) {
          return new Address(
-                 brasilApiAddressDto.postalCode(),
-                 brasilApiAddressDto.street(),
+                 brasilApiAddressRepresentation.postalCode(),
+                 brasilApiAddressRepresentation.street(),
                  number,
                  complement,
-                 brasilApiAddressDto.neighborhood(),
-                 brasilApiAddressDto.city(),
-                 brasilApiAddressDto.state(),
+                 brasilApiAddressRepresentation.neighborhood(),
+                 brasilApiAddressRepresentation.city(),
+                 brasilApiAddressRepresentation.state(),
                  country
          );
     }

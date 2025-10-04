@@ -1,12 +1,37 @@
 spring:
   application:
   name: customers
+  config:
+    import: "optional:classpath:.env"
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_CUSTOMERS}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  output:
+    ansi:
+      enabled: ALWAYS
+  messages:
+    basename: messages
+    encoding: UTF-8
 
+server:
+  port: 8082
 
-feign:
-  clients:
-    brasilapi:
-      base-url: https://brasilapi.com.br/api
-  configs:
-    connect-timeout: 5000
-    read-timeout: 5000
+market-sphere:
+  feign:
+    clients:
+      brasilapi:
+        base-url: https://brasilapi.com.br/api
+    configs:
+      connect-timeout: 5000
+      read-timeout: 5000

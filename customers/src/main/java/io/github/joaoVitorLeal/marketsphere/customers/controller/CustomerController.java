@@ -5,6 +5,7 @@ import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerRequestDto;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerResponseDto;
 import io.github.joaoVitorLeal.marketsphere.customers.service.CustomerService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,18 +29,34 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable Long customerId) {
+    public ResponseEntity<CustomerResponseDto> getCustomerById(
+            @PathVariable @Positive(message = "{customer.id.positive}") Long customerId
+    ) {
         return ResponseEntity.ok(service.getCustomerById(customerId));
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CustomerResponseDto>> getAllCustomers() {
-        return ResponseEntity.ok(service.getAllCustomers());
+        List<CustomerResponseDto> costumers = service.getAllCustomers();
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(costumers.size()))
+                .body(costumers);
     }
 
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<Void> deleteCustomerById(Long customerId) {
+    public ResponseEntity<Void> deleteCustomerById(
+            @PathVariable @Positive(message = "{customer.id.positive}") Long customerId
+    ) {
         service.deleteCustomerById(customerId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/{customerId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateCustomer(
+            @PathVariable @Positive(message = "{customer.id.positive}") Long customerId,
+            @RequestBody @Valid CustomerRequestDto customerRequestDto
+    ) {
+        service.updateCustomer(customerId, customerRequestDto);
         return ResponseEntity.noContent().build();
     }
 }

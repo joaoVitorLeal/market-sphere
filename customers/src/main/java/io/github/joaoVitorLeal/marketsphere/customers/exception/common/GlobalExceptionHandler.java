@@ -7,7 +7,7 @@ import io.github.joaoVitorLeal.marketsphere.customers.dto.error.ValidationErrorD
 import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerNationalIdAlreadyInUseException;
 import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerEmailAlreadyInUseException;
-import io.github.joaoVitorLeal.marketsphere.customers.exception.brasilapi.PostalCodeInvalidException;
+import io.github.joaoVitorLeal.marketsphere.customers.exception.client.brasilapi.PostalCodeInvalidException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

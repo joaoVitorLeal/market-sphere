@@ -1,5 +1,6 @@
-HELP.md
+database/data
 database/.env
+HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

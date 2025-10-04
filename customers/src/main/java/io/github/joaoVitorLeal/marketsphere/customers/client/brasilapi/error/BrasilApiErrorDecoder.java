@@ -1,9 +1,9 @@
-package io.github.joaoVitorLeal.marketsphere.customers.client.error;
+package io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import io.github.joaoVitorLeal.marketsphere.customers.exception.brasilapi.PostalCodeInvalidException;
+import io.github.joaoVitorLeal.marketsphere.customers.exception.client.brasilapi.PostalCodeInvalidException;
 
 import java.io.IOException;
 import java.util.Map;

@@ -5,7 +5,9 @@ import io.github.joaoVitorLeal.marketsphere.products.dto.ProductRequestDto;
 import io.github.joaoVitorLeal.marketsphere.products.dto.ProductResponseDto;
 import io.github.joaoVitorLeal.marketsphere.products.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,20 +20,22 @@ public class ProductController {
 
     private final ProductService service;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createProduct(@RequestBody @Valid ProductRequestDto productRequestDto) {
-        ProductResponseDto productResponseDto = service.create(productRequestDto);
+        ProductResponseDto productResponseDto = service.createProduct(productRequestDto);
         return ResponseEntity
                 .created(HeaderLocationBuilder.build(productResponseDto.id()))
                 .build();
     }
 
-    @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long productId) {
+    @GetMapping(value = "/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ProductResponseDto> getProductById(
+            @PathVariable @Positive(message = "${product.id.positive}") Long productId
+    ) {
         return ResponseEntity.ok(service.getProductById(productId));
     }
 
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
         return ResponseEntity.ok(service.getAllProducts());
     }

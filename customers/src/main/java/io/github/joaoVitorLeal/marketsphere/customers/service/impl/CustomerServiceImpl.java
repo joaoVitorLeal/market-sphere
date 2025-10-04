@@ -1,16 +1,15 @@
 package io.github.joaoVitorLeal.marketsphere.customers.service.impl;
 
-import io.github.joaoVitorLeal.marketsphere.customers.client.BrasilApi;
+import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.BrasilApiClient;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerRequestDto;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerResponseDto;
-import io.github.joaoVitorLeal.marketsphere.customers.dto.brasilapi.BrasilApiAddressDto;
-import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerEmailAlreadyInUseException;
-import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerNationalIdAlreadyInUseException;
+import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.representation.BrasilApiAddressRepresentation;
 import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.customers.mapper.CustomerMapper;
 import io.github.joaoVitorLeal.marketsphere.customers.model.Customer;
 import io.github.joaoVitorLeal.marketsphere.customers.repository.CustomerRepository;
 import io.github.joaoVitorLeal.marketsphere.customers.service.CustomerService;
+import io.github.joaoVitorLeal.marketsphere.customers.validator.CustomerValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,24 +21,21 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository repository;
-    private final BrasilApi brasilApiClient;
+    private final BrasilApiClient brasilApiClient;
     private final CustomerMapper mapper;
+    private final CustomerValidator validator;
 
+    @Transactional
     @Override
     public CustomerResponseDto createCustomer(final CustomerRequestDto customerRequestDto) {
-        if (repository.existsByEmail(customerRequestDto.email())) {
-            throw new CustomerEmailAlreadyInUseException(customerRequestDto.email());
-        }
-        if (repository.existsByNationalId(customerRequestDto.nationalId())) {
-            throw new CustomerNationalIdAlreadyInUseException(customerRequestDto.nationalId());
-        }
-        BrasilApiAddressDto brasilApiAddressDto = brasilApiClient.getAddressDataByPostalCode(customerRequestDto.postalCode());
+        validator.validateForCreate(customerRequestDto);
+        BrasilApiAddressRepresentation brasilApiAddressRepresentation = brasilApiClient.getAddressByPostalCode(customerRequestDto.postalCode());
         return mapper.toCustomerDto(
-                repository.save(mapper.toCustomerEntity(customerRequestDto, brasilApiAddressDto))
+                repository.save(mapper.toCustomerEntity(customerRequestDto, brasilApiAddressRepresentation))
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public CustomerResponseDto getCustomerById(final Long customerId) {
         return repository.findById(customerId)
@@ -47,6 +43,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new CustomerNotFoundException(customerId));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CustomerResponseDto> getAllCustomers() {
         return repository.findAll()
@@ -61,23 +58,10 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customerToUpdate = repository.findById(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException(customerId));
 
-        // valida email duplicado, somente se alterou
-        if (!customerToUpdate.getEmail().equals(customerRequestDto.email()) &&
-                repository.existsByEmail(customerRequestDto.email()))
-        {
-            throw new CustomerEmailAlreadyInUseException(customerRequestDto.email());
-        }
-
-        // valida nationalId duplicado, somente se alterou
-        if (!customerToUpdate.getNationalId().equals(customerRequestDto.nationalId()) &&
-                repository.existsByNationalId(customerRequestDto.nationalId()))
-        {
-            throw new CustomerNationalIdAlreadyInUseException(customerRequestDto.nationalId());
-        }
-
-        // valida postalCode chamando BrasilAPI
-        BrasilApiAddressDto brasilApiAddressDto = brasilApiClient.getAddressDataByPostalCode(customerRequestDto.postalCode());
-        // TODO //
+        validator.validateForUpdate(customerToUpdate, customerRequestDto);
+        // valida postalCode chamando Brasil API
+        BrasilApiAddressRepresentation brasilApiAddressRepresentation = brasilApiClient.getAddressByPostalCode(customerRequestDto.postalCode());
+        mapper.updateCustomerEntity(customerToUpdate, customerRequestDto, brasilApiAddressRepresentation);
     }
 
     @Transactional
