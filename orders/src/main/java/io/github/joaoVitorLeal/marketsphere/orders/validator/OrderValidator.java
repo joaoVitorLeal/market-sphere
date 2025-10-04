@@ -7,6 +7,8 @@ import io.github.joaoVitorLeal.marketsphere.orders.client.products.ProductsClien
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.representation.ProductRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,7 @@ public class OrderValidator {
             assert customerRepresentation != null;
             log.info("Customer found with ID '{}' and name '{}'.", customerId, customerRepresentation.fullName());
         } catch (FeignException.NotFound e) {
-            log.error("Customer not found with ID: {}.", customerId);
+            throw new CustomerClientNotFoundException("customerId", "Customer not found with ID: " + customerId);
         }
 
 
@@ -47,9 +49,8 @@ public class OrderValidator {
 
             assert productRepresentation != null;
             log.info("Product found with ID '{}' and name '{}'.", productRepresentation.id(), productRepresentation.name());
-
         } catch (FeignException.NotFound e) {
-            log.error("Product not found with ID: {}.", orderItemDto.productId());
+            throw new ProductClientNotFoundException("productId", "Product not found with ID: " + orderItemDto.productId());
         }
     }
 }
