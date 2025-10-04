@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.error.ErrorResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.error.ValidationErrorDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -104,6 +106,26 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponseDto.notFound(exception.getMessage(), httpRequest.getRequestURI()));
     }
 
+    @ExceptionHandler(CustomerClientNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleCustomerClientNotFoundException(
+            final CustomerClientNotFoundException exception,
+            final HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND.value())
+                .body(ErrorResponseDto.notFound(exception.getMessage(), httpRequest.getRequestURI()));
+    }
+
+    @ExceptionHandler(ProductClientNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleProductClientNotFoundException(
+            final ProductClientNotFoundException exception,
+            final HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND.value())
+                .body(ErrorResponseDto.notFound(exception.getMessage(), httpRequest.getRequestURI()));
+    }
+
 //    @ExceptionHandler(CustomerEmailAlreadyInUseException.class)
 //    public ResponseEntity<ErrorResponseDto> handleEmailAlreadyInUseException(
 //            final CustomerEmailAlreadyInUseException exception,
@@ -114,15 +136,6 @@ public class GlobalExceptionHandler {
 //                .body(ErrorResponseDto.conflict(exception.getMessage(), httpRequest.getRequestURI()));
 //    }
 //
-//    @ExceptionHandler(CustomerNationalIdAlreadyInUseException.class)
-//    public ResponseEntity<ErrorResponseDto> handleCustomerNationalIdAlreadyInUseException(
-//            final CustomerNationalIdAlreadyInUseException exception,
-//            final HttpServletRequest httpRequest
-//    ) {
-//        return ResponseEntity
-//                .status(HttpStatus.CONFLICT.value())
-//                .body(ErrorResponseDto.conflict(exception.getMessage(), httpRequest.getRequestURI()));
-//    }
 //
 //    @ExceptionHandler(PostalCodeInvalidException.class)
 //    public ResponseEntity<ErrorResponseDto> handlePostalCodeInvalidException(
