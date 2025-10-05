@@ -15,7 +15,7 @@ public record OrderRequestDto(
 
         @NotNull(message = "{order.paymentInfo.required}")
         @Valid
-        PaymentInfoDto paymentInfo,
+        PaymentInfoRequestDto paymentInfo,
 
         @NotEmpty(message = "{order.orderItems.notEmpty}")
         @Valid
