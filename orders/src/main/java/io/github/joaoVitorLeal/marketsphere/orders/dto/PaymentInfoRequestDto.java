@@ -4,7 +4,7 @@ import io.github.joaoVitorLeal.marketsphere.orders.model.enums.PaymentType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record PaymentInfoDto(
+public record PaymentInfoRequestDto(
 
         @NotBlank(message = "{order.paymentInfo.metadata.required}")
         String metadata,

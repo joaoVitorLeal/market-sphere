@@ -15,11 +15,11 @@ public record OrderRequestDto(
 
         @NotNull(message = "{order.paymentInfo.required}")
         @Valid
-        PaymentInfoDto paymentInfo,
+        PaymentInfoRequestDto paymentInfo,
 
         @NotEmpty(message = "{order.orderItems.notEmpty}")
         @Valid
-        List<OrderItemDto> orderItems
+        List<OrderItemRequestDto> orderItems
 ) {
     public OrderRequestDto {
         orderItems = List.copyOf(orderItems); // garante imutabilidade

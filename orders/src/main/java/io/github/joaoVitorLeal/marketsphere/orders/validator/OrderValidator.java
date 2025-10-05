@@ -5,7 +5,7 @@ import io.github.joaoVitorLeal.marketsphere.orders.client.customers.CustomersCli
 import io.github.joaoVitorLeal.marketsphere.orders.client.customers.representation.CustomerRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.ProductsClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.representation.ProductRepresentation;
-import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemDto;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
@@ -42,15 +42,15 @@ public class OrderValidator {
 
     }
 
-    private void validateOrderItem(OrderItemDto orderItemDto) {
+    private void validateOrderItem(OrderItemRequestDto orderItemRequestDto) {
         try {
-            ResponseEntity<ProductRepresentation> response = productsClient.getProductById(orderItemDto.productId());
+            ResponseEntity<ProductRepresentation> response = productsClient.getProductById(orderItemRequestDto.productId());
             ProductRepresentation productRepresentation = response.getBody();
 
             assert productRepresentation != null;
             log.info("Product found with ID '{}' and name '{}'.", productRepresentation.id(), productRepresentation.name());
         } catch (FeignException.NotFound e) {
-            throw new ProductClientNotFoundException("productId", "Product not found with ID: " + orderItemDto.productId());
+            throw new ProductClientNotFoundException("productId", "Product not found with ID: " + orderItemRequestDto.productId());
         }
     }
 }

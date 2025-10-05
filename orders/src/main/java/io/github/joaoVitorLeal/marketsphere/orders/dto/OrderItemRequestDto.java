@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record OrderItemDto(
+public record OrderItemRequestDto(
 
         @NotNull(message = "{order.orderItems.productId.required}")
         @Positive(message = "{order.OrderItems.productId.positive}")
