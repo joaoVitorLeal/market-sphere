@@ -1,6 +1,6 @@
 package io.github.joaoVitorLeal.marketsphere.orders.mapper;
 
-import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemDto;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
@@ -24,8 +24,8 @@ public interface OrderMapper {
     OrderResponseDto toOrderDto(Order order);
 
     @Named("toOrderItemsEntities")
-    default List<OrderItem> toOrderItemEntities(List<OrderItemDto> orderItemDtos) {
-        return orderItemDtos.stream()
+    default List<OrderItem> toOrderItemEntities(List<OrderItemRequestDto> orderItemRequestDtos) {
+        return orderItemRequestDtos.stream()
                 .map(ORDER_ITEM_MAPPER::toOrderItemEntity)
                 .toList();
     }
