@@ -20,8 +20,8 @@ import jakarta.validation.constraints.Positive;
  * */
 public record PaymentCallbackRequestDto(
 
-        @NotNull(message = "{order.customerId.required}")
-        @Positive(message = "{order.customerId.positive}")
+        @NotNull(message = "{order.id.required}")
+        @Positive(message = "{order.id.positive}")
         Long orderId,
 
         String paymentKey,
