@@ -19,7 +19,7 @@ public record OrderRequestDto(
 
         @NotEmpty(message = "{order.orderItems.notEmpty}")
         @Valid
-        List<OrderItemDto> orderItems
+        List<OrderItemRequestDto> orderItems
 ) {
     public OrderRequestDto {
         orderItems = List.copyOf(orderItems); // garante imutabilidade
