@@ -18,7 +18,7 @@ import jakarta.validation.constraints.Positive;
  *     "apiKey": "string"
  * }
  * */
-public record PaymentCallbackRequestDto(
+public record PaymentNotificationDto(
 
         @NotNull(message = "{order.id.required}")
         @Positive(message = "{order.id.positive}")
