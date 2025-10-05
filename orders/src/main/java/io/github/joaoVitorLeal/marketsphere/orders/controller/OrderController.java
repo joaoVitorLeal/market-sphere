@@ -2,15 +2,15 @@ package io.github.joaoVitorLeal.marketsphere.orders.controller;
 
 import io.github.joaoVitorLeal.marketsphere.orders.controller.util.HeaderLocationBuilder;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.PaymentInfoRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("orders")
@@ -24,5 +24,24 @@ public class OrderController {
         return ResponseEntity
                 .created(HeaderLocationBuilder.build(service.createOrder(orderRequestDto).id()))
                 .build();
+    }
+
+    @PostMapping("/{orderId}/payments")
+    public ResponseEntity<Void> createPayment(
+            @PathVariable
+            @Positive(message = "{order.id.positive}")
+            @NotNull(message = "{order.id.required}")
+            Long orderId,
+
+            @RequestBody
+            @Valid
+            PaymentInfoRequestDto paymentRequestDto
+    ) {
+        service.createPayment(
+                orderId,
+                paymentRequestDto.metadata(),
+                paymentRequestDto.paymentType()
+        );
+        return ResponseEntity.noContent().build();
     }
 }
