@@ -6,7 +6,7 @@ import io.github.joaoVitorLeal.marketsphere.products.dto.ProductResponseDto;
 import java.util.List;
 
 public interface ProductService {
-    ProductResponseDto createProduct(ProductRequestDto dto);
-    ProductResponseDto getProductById(Long id);
+    ProductResponseDto createProduct(ProductRequestDto productRequestDto);
+    ProductResponseDto getProductById(Long productId);
     List<ProductResponseDto> getAllProducts();
 }
