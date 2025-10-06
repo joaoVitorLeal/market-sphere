@@ -5,8 +5,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableFeignClients(basePackages = "io/github/joaoVitorLeal/marketsphere/orders/client")
-public class ClientsConfig {
-
-
-
-}
+public class ClientsConfig { }
