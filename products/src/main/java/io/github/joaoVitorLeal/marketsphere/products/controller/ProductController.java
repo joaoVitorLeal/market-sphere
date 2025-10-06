@@ -37,8 +37,14 @@ public class ProductController {
         return ResponseEntity.ok(service.getProductById(productId));
     }
 
+    // Métod unificado para buscar todos os produtos ou por uma lista de IDs
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
+    public ResponseEntity<List<ProductResponseDto>> getProducts(
+            @RequestParam(value = "productsIds", required = false) List<Long> productsIds
+    ) {
+        if (productsIds != null && !productsIds.isEmpty()) {
+            return ResponseEntity.ok(service.getAllProductsByIds(productsIds));
+        }
         return ResponseEntity.ok(service.getAllProducts());
     }
 }
