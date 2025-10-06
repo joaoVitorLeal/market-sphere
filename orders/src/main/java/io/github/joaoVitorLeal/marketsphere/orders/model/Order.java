@@ -51,6 +51,6 @@ public class Order {
     @Transient
     private PaymentInfo paymentInfo;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", orphanRemoval = true)
     private List<OrderItem> orderItems;
 }
