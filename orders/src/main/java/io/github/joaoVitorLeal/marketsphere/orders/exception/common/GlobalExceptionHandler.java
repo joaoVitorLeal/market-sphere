@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.error.ErrorResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.error.ValidationErrorDto;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.MessagingSerializationException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
@@ -24,7 +25,7 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     private static final String VALIDATION_ERROR_MESSAGE = "Validation error.";
-    private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error has occurred. Please try again later.\nIf the error persists, please contact our support team.";
+    private static final String INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error has occurred. Please try again later.If the error persists, please contact our support team.";
     private static final String MALFORMED_JSON_TYPE_MESSAGE = "Malformed JSON request or invalid field type.";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -64,12 +65,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .body( new ErrorResponseDto(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        INTERNAL_SERVER_ERROR_MESSAGE,
-                        List.of(),
-                        httpRequest.getRequestURI()
-                ));
+                .body(ErrorResponseDto.internalServerError(INTERNAL_SERVER_ERROR_MESSAGE, httpRequest.getRequestURI()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
