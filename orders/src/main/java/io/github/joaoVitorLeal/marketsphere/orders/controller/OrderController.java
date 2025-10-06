@@ -47,4 +47,20 @@ public class OrderController {
         );
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping(value = "/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getOrderById(
+            @PathVariable
+            @Positive(message = "{order.id.positive}")
+            @NotNull(message = "{order.id.required}")
+            Long orderId,
+
+            @RequestParam(value = "view", defaultValue = "summary")
+            String view
+    ) {
+        if ("details".equalsIgnoreCase(view)) {
+            return ResponseEntity.ok(service.getOrderRepresentationById(orderId));
+        }
+        return ResponseEntity.ok(service.getOrderById(orderId));
+    }
 }
