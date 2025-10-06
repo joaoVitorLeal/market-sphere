@@ -23,6 +23,8 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
 server:
   port: ${SERVER_PORT}
@@ -37,3 +39,9 @@ market-sphere:
     configs:
       connect-timeout: 5000
       read-timeout: 5000
+  config:
+    kafka:
+      topics:
+        paid-orders: ${KAFKA_TOPIC_PAID_ORDERS}
+        billed-orders: ${KAFKA_TOPIC_BILLED_ORDERS}
+        shipped-orders: ${KAFKA_TOPIC_SHIPPED_ORDERS}
