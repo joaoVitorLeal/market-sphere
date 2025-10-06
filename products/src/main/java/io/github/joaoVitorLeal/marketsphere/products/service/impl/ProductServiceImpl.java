@@ -47,4 +47,18 @@ public class ProductServiceImpl implements ProductService {
                 ))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProductResponseDto> getAllProductsByIds(List<Long> productsIds) {
+        return repository.findAllById(productsIds)
+                .stream()
+                .map(product -> new ProductResponseDto(
+                        product.getId(),
+                        product.getName(),
+                        product.getUnitPrice(),
+                        product.getDescription()
+                ))
+                .toList();
+    }
 }
