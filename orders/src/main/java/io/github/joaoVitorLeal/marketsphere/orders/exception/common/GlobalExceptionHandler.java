@@ -122,24 +122,20 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponseDto.notFound(exception.getMessage(), httpRequest.getRequestURI()));
     }
 
-//    @ExceptionHandler(CustomerEmailAlreadyInUseException.class)
-//    public ResponseEntity<ErrorResponseDto> handleEmailAlreadyInUseException(
-//            final CustomerEmailAlreadyInUseException exception,
-//            final HttpServletRequest httpRequest
-//    ) {
-//        return ResponseEntity
-//                .status(HttpStatus.CONFLICT.value())
-//                .body(ErrorResponseDto.conflict(exception.getMessage(), httpRequest.getRequestURI()));
-//    }
-//
-//
-//    @ExceptionHandler(PostalCodeInvalidException.class)
-//    public ResponseEntity<ErrorResponseDto> handlePostalCodeInvalidException(
-//            final PostalCodeInvalidException exception,
-//            final HttpServletRequest httpRequest
-//    ) {
-//        return ResponseEntity
-//                .status(HttpStatus.BAD_REQUEST.value())
-//                .body(ErrorResponseDto.badRequest(exception.getMessage(), httpRequest.getRequestURI()));
-//    }
+    @ExceptionHandler(MessagingSerializationException.class)
+    public ResponseEntity<ErrorResponseDto> handleMessagingSerializationException(
+            final MessagingSerializationException exception,
+            final HttpServletRequest httpRequest
+    ) {
+        log.error(
+                "Internal server error at: [{}] during message serialization: {}",
+                httpRequest.getRequestURI(),
+                exception.getMessage(),
+                exception
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .body(ErrorResponseDto.internalServerError(INTERNAL_SERVER_ERROR_MESSAGE, httpRequest.getRequestURI()));
+    }
 }
