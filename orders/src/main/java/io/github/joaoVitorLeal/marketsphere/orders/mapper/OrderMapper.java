@@ -19,6 +19,14 @@ public interface OrderMapper {
     OrderItemMapper ORDER_ITEM_MAPPER = Mappers.getMapper(OrderItemMapper.class);
 
     @Mapping(source = "orderItems", target = "orderItems", qualifiedByName = "toOrderItemsEntities")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "orderDate", ignore = true)
+    @Mapping(target = "paymentKey", ignore = true)
+    @Mapping(target = "observations", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "total", ignore = true)
+    @Mapping(target = "trackingCode", ignore = true)
+    @Mapping(target = "invoiceUrl", ignore = true)
     Order toOrderEntity(OrderRequestDto orderRequestDto);
 
     OrderResponseDto toOrderDto(Order order);
