@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Positive;
  * {
  *     "orderId": "number",
  *     "paymentKey": "string",
- *     "status": "boolean"
+ *     "successful": "boolean"
  *     "observations": "string"
  * }
  * <br><br/>
@@ -25,6 +25,6 @@ public record PaymentNotificationDto(
         Long orderId,
 
         String paymentKey,
-        boolean status,
+        boolean successful,
         String observations
 ) { }
