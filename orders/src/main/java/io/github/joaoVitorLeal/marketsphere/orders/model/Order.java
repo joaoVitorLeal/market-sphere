@@ -3,10 +3,10 @@ package io.github.joaoVitorLeal.marketsphere.orders.model;
 
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -14,10 +14,15 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
-@AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Order {
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString(exclude = {"orderItems"})
+public class Order implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
