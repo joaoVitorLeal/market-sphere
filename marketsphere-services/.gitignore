@@ -1,3 +1,4 @@
+broker/.env
 broker/docker-compose-references.yml
 database/data
 database/.env
