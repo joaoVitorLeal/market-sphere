@@ -49,6 +49,7 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-io.version>2.16.1</commons-io.version>
 	</properties>
 
     <dependencies>
@@ -133,6 +134,12 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
