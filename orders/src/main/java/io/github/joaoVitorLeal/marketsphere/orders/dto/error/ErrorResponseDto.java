@@ -29,4 +29,8 @@ public record ErrorResponseDto(
     public static ErrorResponseDto notFound(String message, String path) {
         return new ErrorResponseDto(Instant.now(), HttpStatus.NOT_FOUND.value(), message, List.of(), path);
     }
+
+    public static ErrorResponseDto internalServerError(String message, String path) {
+        return new ErrorResponseDto(Instant.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(), message, List.of(), path);
+    }
 }
