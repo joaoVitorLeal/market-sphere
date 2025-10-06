@@ -6,6 +6,7 @@ import io.github.joaoVitorLeal.marketsphere.products.dto.error.ErrorResponseDto;
 import io.github.joaoVitorLeal.marketsphere.products.dto.error.ValidationErrorDto;
 import io.github.joaoVitorLeal.marketsphere.products.exception.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -102,5 +103,36 @@ public class GlobalExceptionHandler {
                         List.of(),
                         httpRequest.getRequestURI()
                 ));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleConstraintViolationException(
+            final ConstraintViolationException exception,
+            final HttpServletRequest httpRequest
+    ) {
+        log.error("Constraint violation at: [{}]: {}", httpRequest.getRequestURI(), exception.getMessage());
+
+        // Cria uma lista de erros a partir das violações
+        List<ValidationErrorDto> validationErrorsDto = exception.getConstraintViolations().stream()
+                .map(violation -> new ValidationErrorDto(
+                        extractFieldName(violation.getPropertyPath().toString()),
+                        violation.getMessage()
+                ))
+                .toList();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponseDto(
+                        HttpStatus.BAD_REQUEST.value(),
+                        VALIDATION_ERROR_MESSAGE,
+                        validationErrorsDto,
+                        httpRequest.getRequestURI()
+                ));
+    }
+
+    private String extractFieldName(String propertyPath) {
+        // Lógica simples para extrair o nome do campo
+        String[] parts = propertyPath.split("\\.");
+        return parts.length > 1 ? parts[parts.length - 1] : propertyPath;
     }
 }
