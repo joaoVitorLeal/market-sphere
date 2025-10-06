@@ -25,13 +25,13 @@ spring:
     encoding: UTF-8
 
 server:
-  port: 8082
+  port: ${SERVER_PORT}
 
 market-sphere:
   feign:
     clients:
       brasilapi:
-        base-url: https://brasilapi.com.br/api
+        base-url: ${BRASIL_API_URL}
     configs:
       connect-timeout: 5000
       read-timeout: 5000
