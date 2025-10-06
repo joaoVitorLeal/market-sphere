@@ -29,6 +29,7 @@ public interface OrderMapper {
     @Mapping(target = "invoiceUrl", ignore = true)
     Order toOrderEntity(OrderRequestDto orderRequestDto);
 
+    @Mapping(target = "amountItems", expression = "java(order.getOrderItems() != null ? order.getOrderItems().size() : 0)")
     OrderResponseDto toOrderDto(Order order);
 
     @Named("toOrderItemsEntities")
