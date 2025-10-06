@@ -23,17 +23,25 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT}
 
 market-sphere:
   feign:
     clients:
       products:
-        base-url: http://localhost:8081/products
+        base-url: http://${PRODUCTS_CLIENT_HOST}:${PRODUCTS_CLIENT_PORT}/products
       customers:
-        base-url: http://localhost:8082/customers
+        base-url: http://${CUSTOMERS_CLIENT_HOST}:${CUSTOMERS_CLIENT_PORT}/customers
     configs:
       connect-timeout: 5000
       read-timeout: 5000
+  config:
+    kafka:
+      topics:
+        paid-orders: ${KAFKA_TOPIC_PAID_ORDERS}
+        billed-orders: ${KAFKA_TOPIC_BILLED_ORDERS}
+        shipped-orders: ${KAFKA_TOPIC_SHIPPED_ORDERS}

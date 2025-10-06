@@ -3,6 +3,7 @@ package io.github.joaoVitorLeal.marketsphere.orders.controller;
 import io.github.joaoVitorLeal.marketsphere.orders.controller.util.HeaderLocationBuilder;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.PaymentInfoRequestDto;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.representation.OrderRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -10,11 +11,13 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("orders")
 @RequiredArgsConstructor
+@Validated
 public class OrderController {
 
     private final OrderService service;
@@ -26,7 +29,7 @@ public class OrderController {
                 .build();
     }
 
-    @PostMapping("/{orderId}/payments")
+    @PostMapping(value = "/{orderId}/payments", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createPayment(
             @PathVariable
             @Positive(message = "{order.id.positive}")
@@ -43,5 +46,21 @@ public class OrderController {
                 paymentRequestDto.paymentType()
         );
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(value = "/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getOrderById(
+            @PathVariable
+            @Positive(message = "{order.id.positive}")
+            @NotNull(message = "{order.id.required}")
+            Long orderId,
+
+            @RequestParam(value = "view", defaultValue = "summary")
+            String view
+    ) {
+        if ("details".equalsIgnoreCase(view)) {
+            return ResponseEntity.ok(service.getOrderRepresentationById(orderId));
+        }
+        return ResponseEntity.ok(service.getOrderById(orderId));
     }
 }

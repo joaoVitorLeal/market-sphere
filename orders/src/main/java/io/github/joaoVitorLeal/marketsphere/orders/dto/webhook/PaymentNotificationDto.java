@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Positive;
  * {
  *     "orderId": "number",
  *     "paymentKey": "string",
- *     "status": "boolean"
+ *     "successful": "boolean"
  *     "observations": "string"
  * }
  * <br><br/>
@@ -18,13 +18,13 @@ import jakarta.validation.constraints.Positive;
  *     "apiKey": "string"
  * }
  * */
-public record PaymentCallbackRequestDto(
+public record PaymentNotificationDto(
 
-        @NotNull(message = "{order.customerId.required}")
-        @Positive(message = "{order.customerId.positive}")
+        @NotNull(message = "{order.id.required}")
+        @Positive(message = "{order.id.positive}")
         Long orderId,
 
         String paymentKey,
-        boolean status,
+        boolean successful,
         String observations
 ) { }

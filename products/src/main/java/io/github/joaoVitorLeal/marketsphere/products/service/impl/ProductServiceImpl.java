@@ -20,17 +20,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public ProductResponseDto createProduct(ProductRequestDto dto) {
-        Product product = new Product(dto.name(), dto.unitPrice(), dto.description());
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto) {
+        Product product = new Product(productRequestDto.name(), productRequestDto.unitPrice(), productRequestDto.description());
         repository.save(product);
         return new ProductResponseDto(product.getId(), product.getName(), product.getUnitPrice(), product.getDescription());
     }
 
     @Transactional(readOnly = true)
     @Override
-    public ProductResponseDto getProductById(Long id) {
-        Product product = repository.findById(id)
-                .orElseThrow( ()-> new ProductNotFoundException(id) );
+    public ProductResponseDto getProductById(Long productId) {
+        Product product = repository.findById(productId)
+                .orElseThrow( ()-> new ProductNotFoundException(productId) );
         return new ProductResponseDto(product.getId(), product.getName(), product.getUnitPrice(), product.getDescription());
     }
 
@@ -40,6 +40,20 @@ public class ProductServiceImpl implements ProductService {
         return repository.findAll()
                 .stream()
                 .map( product -> new ProductResponseDto(
+                        product.getId(),
+                        product.getName(),
+                        product.getUnitPrice(),
+                        product.getDescription()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProductResponseDto> getAllProductsByIds(List<Long> productsIds) {
+        return repository.findAllById(productsIds)
+                .stream()
+                .map(product -> new ProductResponseDto(
                         product.getId(),
                         product.getName(),
                         product.getUnitPrice(),

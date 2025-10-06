@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated; // Import necessário
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("products")
 @RequiredArgsConstructor
+@Validated // Habilita a validação para @PathVariable e @RequestParam
 public class ProductController {
 
     private final ProductService service;
@@ -30,13 +32,19 @@ public class ProductController {
 
     @GetMapping(value = "/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProductResponseDto> getProductById(
-            @PathVariable @Positive(message = "${product.id.positive}") Long productId
+            @PathVariable @Positive(message = "{product.id.positive}") Long productId
     ) {
         return ResponseEntity.ok(service.getProductById(productId));
     }
 
+    // Métod unificado para buscar todos os produtos ou por uma lista de IDs
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
+    public ResponseEntity<List<ProductResponseDto>> getProducts(
+            @RequestParam(value = "productsIds", required = false) List<Long> productsIds
+    ) {
+        if (productsIds != null && !productsIds.isEmpty()) {
+            return ResponseEntity.ok(service.getAllProductsByIds(productsIds));
+        }
         return ResponseEntity.ok(service.getAllProducts());
     }
 }

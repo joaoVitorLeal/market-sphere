@@ -17,12 +17,12 @@ public class BankingClient {
      * Simula uma solicitação de pagamento a um gateway bancário.
      * Atualmente retorna uma resposta mockada com:
      * - String aleatória como chave de pagamento
-     * - HTTP status 200 OK
+     * - HTTP successful 200 OK
      * - Mensagem de sucesso genérica
      * - Timestamp atual
      *
      * @param order o pedido a ser pago
-     * @return PaymentResponseDto contendo chave de pagamento, status, mensagem e timestamp
+     * @return PaymentResponseDto contendo chave de pagamento, successful, mensagem e timestamp
      */
     public BankingPaymentRepresentation requestPayment(Order order) {
         log.info("Requesting payment for order ID {}.", order.getId());

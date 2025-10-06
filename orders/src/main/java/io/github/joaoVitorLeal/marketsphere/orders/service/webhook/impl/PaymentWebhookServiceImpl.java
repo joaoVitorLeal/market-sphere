@@ -1,14 +1,16 @@
 package io.github.joaoVitorLeal.marketsphere.orders.service.webhook.impl;
 
-import io.github.joaoVitorLeal.marketsphere.orders.dto.webhook.PaymentCallbackRequestDto;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.webhook.PaymentNotificationDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderRepository;
+import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
 import io.github.joaoVitorLeal.marketsphere.orders.service.webhook.PaymentWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,11 +18,13 @@ import org.springframework.stereotype.Service;
 public class PaymentWebhookServiceImpl implements PaymentWebhookService {
 
     private final OrderRepository orderRepository;
+    private final OrderService orderService; // Dependência de delegação
 
+    @Transactional
     @Override
-    public void updatePaymentStatus(PaymentCallbackRequestDto paymentCallbackRequestDto) {
-        Long orderId = paymentCallbackRequestDto.orderId();
-        String orderPaymentKey = paymentCallbackRequestDto.paymentKey();
+    public void updatePaymentStatus(PaymentNotificationDto paymentNotificationDto) {
+        Long orderId = paymentNotificationDto.orderId();
+        String orderPaymentKey = paymentNotificationDto.paymentKey();
         Order existingOrder = orderRepository.findByIdAndPaymentKey(orderId, orderPaymentKey)
                 .orElseThrow(() -> {
                     String errorMessage = String.format("Not found order with ID '%d' and payment key '%s'", orderId, orderPaymentKey);
@@ -28,20 +32,11 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
                     return new OrderNotFoundException(errorMessage);
                 });
 
-        if (paymentCallbackRequestDto.status()) {
-            existingOrder.setStatus(OrderStatus.PAID);
+        if (paymentNotificationDto.successful()) {
+            orderService.processSuccessfulPayment(existingOrder.getId());
         } else {
             existingOrder.setStatus(OrderStatus.PAYMENT_ERROR);
-            existingOrder.setObservations(paymentCallbackRequestDto.observations());
+            existingOrder.setObservations(paymentNotificationDto.observations());
         }
-        orderRepository.save(existingOrder);
     }
 }
-
-
-
-
-
-
-
-

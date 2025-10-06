@@ -1,7 +1,7 @@
+src/main/java/io/github/joaoVitorLeal/marketsphere/orders/translator
 src/main/resources/.env
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 

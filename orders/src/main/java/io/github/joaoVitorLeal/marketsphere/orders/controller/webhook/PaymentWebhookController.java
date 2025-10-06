@@ -1,6 +1,6 @@
 package io.github.joaoVitorLeal.marketsphere.orders.controller.webhook;
 
-import io.github.joaoVitorLeal.marketsphere.orders.dto.webhook.PaymentCallbackRequestDto;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.webhook.PaymentNotificationDto;
 import io.github.joaoVitorLeal.marketsphere.orders.service.webhook.PaymentWebhookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +15,10 @@ public class PaymentWebhookController {
 
     @PostMapping
     public ResponseEntity<Void> updatePaymentStatus(
-            @RequestBody PaymentCallbackRequestDto paymentCallbackRequestDto,
+            @RequestBody PaymentNotificationDto paymentNotificationDto,
             @RequestHeader("apiKey") String apiKey
     ) {
-        paymentWebhookService.updatePaymentStatus(paymentCallbackRequestDto);
+        paymentWebhookService.updatePaymentStatus(paymentNotificationDto);
         return ResponseEntity.noContent().build();
     }
 }
