@@ -1,1 +1,31 @@
-spring.application.name=billing
+spring:
+  application:
+  name: billing
+  kafka:
+    bootstrap-servers: http://${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_BILLED_GROUP_ID}
+      auto-offset-reset: earliest # Para obter mensagens das mais antigas às mais novas. Isso evita perda de dados.
+  output:
+    ansi:
+      enabled: ALWAYS
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+server:
+  port: ${SERVER_PORT}
+
+market-sphere:
+  config:
+    kafka:
+      topics:
+        paid-orders: ${KAFKA_TOPIC_PAID_ORDERS}
+        billed-orders: ${KAFKA_TOPIC_BILLED_ORDERS}
+        shipped-orders: ${KAFKA_TOPIC_SHIPPED_ORDERS}
+
+minio:
+  url: http://${MINIO_HOST}:${MINIO_PORT}
+  access-key: ${ACCESS_KEY}
+  secret-key: ${SECRET_KEY}
+  bucket-name: ${BILLING_BUCKET}
