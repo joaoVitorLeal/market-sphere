@@ -6,9 +6,13 @@ import io.github.joaoVitorLeal.marketsphere.orders.client.customers.CustomersCli
 import io.github.joaoVitorLeal.marketsphere.orders.client.customers.representation.CustomerRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.ProductsClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.representation.ProductRepresentation;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderDetailsResponseDto;
+import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemDetailsResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderDetailsMapper;
+import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderItemDetailsMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 import io.github.joaoVitorLeal.marketsphere.orders.model.OrderItem;
@@ -16,10 +20,10 @@ import io.github.joaoVitorLeal.marketsphere.orders.model.PaymentInfo;
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.PaymentType;
 import io.github.joaoVitorLeal.marketsphere.orders.publisher.PaymentPublisher;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderItemRepresentationMapper;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderRepresentationMapper;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.representation.OrderItemRepresentation;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.representation.OrderRepresentation;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderItemPayloadMapper;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderPaidEventMapper;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderItemPayload;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderPaidEvent;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderItemRepository;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderRepository;
 import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
@@ -40,17 +44,22 @@ public class OrderServiceImpl implements OrderService {
 
     private static final String NEW_PAYMENT_OBSERVATION_MESSAGE = "New payment made. Awaiting processing.";
 
+    // Repositories e Validator do domínio
     private final OrderRepository repository;
     private final OrderItemRepository orderItemRepository;
     private final OrderValidator validator;
-    private final OrderMapper mapper;
+    // Clients de Microsserviços
     private final BankingClient bankingClient;
     private final CustomersClient customersClient;
     private final ProductsClient productsClient;
-    private final OrderRepresentationMapper orderRepresentationMapper;
-    private final OrderItemRepresentationMapper orderItemRepresentationMapper;
+    // Mappers
+    private final OrderMapper mapper;
+    private final OrderDetailsMapper orderDetailsMapper;
+    private final OrderItemDetailsMapper orderItemDetailsMapper;
+    private final OrderPaidEventMapper orderPaidEventMapper;
+    private final OrderItemPayloadMapper orderItemPayloadMapper;
+    // Kafka Publisher
     private final PaymentPublisher paymentPublisher;
-
 
     @Transactional
     @Override
@@ -85,11 +94,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public OrderRepresentation getOrderRepresentationById(Long orderId) {
+    public OrderDetailsResponseDto getOrderDetailsById(Long orderId) {
         Order existingOrder = this.findOrderById(orderId);
-        CustomerRepresentation customerRepresentation = this.findCustomerRepresentation(existingOrder);
-        List<OrderItemRepresentation> orderItemRepresentations = this.getOrderItemRepresentations(existingOrder);
-        return orderRepresentationMapper.toOrderRepresentation(existingOrder, customerRepresentation, orderItemRepresentations);
+        CustomerRepresentation existingCustomer = this.findCustomerRepresentation(existingOrder);
+        List<OrderItemDetailsResponseDto> orderItemDtos = this.getOrderItemDetailsDtos(existingOrder);
+        return orderDetailsMapper.toOrderDetailsDto(existingOrder, existingCustomer, orderItemDtos);
     }
 
     @Transactional
@@ -98,13 +107,14 @@ public class OrderServiceImpl implements OrderService {
         Order existingOrder = this.findOrderById(orderId);
         existingOrder.setStatus(OrderStatus.PAID);
 
-        CustomerRepresentation customerRepresentation = this.findCustomerRepresentation(existingOrder);
-        List<OrderItemRepresentation> orderItemRepresentations = this.getOrderItemRepresentations(existingOrder);
-        OrderRepresentation orderRepresentation = orderRepresentationMapper.toOrderRepresentation(existingOrder, customerRepresentation, orderItemRepresentations);
+        CustomerRepresentation existingCustomer = this.findCustomerRepresentation(existingOrder);
+        List<OrderItemPayload> orderItemRepresentations = this.getOrderItemPayload(existingOrder);
+        OrderPaidEvent orderPaidEvent = orderPaidEventMapper.toOrderEvent(existingOrder, existingCustomer, orderItemRepresentations);
 
-        paymentPublisher.publish(orderRepresentation);
+        paymentPublisher.publish(orderPaidEvent);
     }
 
+    // ---- MÉTODOS PRIVADOS (helpers) ---- //
     private Order findOrderById(Long orderId) {
         return repository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
@@ -126,7 +136,27 @@ public class OrderServiceImpl implements OrderService {
         return customersClient.getCustomerById(order.getCustomerId()).getBody();
     }
 
-    private List<OrderItemRepresentation> getOrderItemRepresentations(Order order) {
+    // Helper para a API REST (Leitura)
+    private List<OrderItemDetailsResponseDto> getOrderItemDetailsDtos(Order order) {
+        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> productsIds = order.getOrderItems().stream().map(OrderItem::getProductId).toList();
+        Map<Long, ProductRepresentation> productRepresentationMap = this.getProductRepresentationMap(productsIds);
+
+        return order.getOrderItems()
+                .stream()
+                .map(orderItem -> {
+                    ProductRepresentation productRepresentation = productRepresentationMap.get(orderItem.getProductId());
+                    // Usa o mapper da API
+                    return orderItemDetailsMapper.toOrderItemDetailsDto(orderItem, productRepresentation);
+                })
+                .toList();
+    }
+
+    // Helper para o KAFKA (Evento)
+    private List<OrderItemPayload> getOrderItemPayload(Order order) {
         List<Long> productsIds = order.getOrderItems()
                 .stream()
                 .map(OrderItem::getProductId)
@@ -136,17 +166,18 @@ public class OrderServiceImpl implements OrderService {
             return Collections.emptyList();
         }
 
-        Map<Long, ProductRepresentation> productRepresentationMap = getProductRepresentationMap(productsIds);
+        Map<Long, ProductRepresentation> productRepresentationMap = this.getProductRepresentationMap(productsIds);
 
         return order.getOrderItems()
                 .stream()
                 .map(orderItem -> {
                     ProductRepresentation productRepresentation = productRepresentationMap.get(orderItem.getProductId());
-                    return orderItemRepresentationMapper.toOrderItemRepresentation(orderItem, productRepresentation);
+                    return orderItemPayloadMapper.toOrderItemPayload(orderItem, productRepresentation);
                 })
                 .toList();
     }
 
+    // Buscar produtos
     private Map<Long, ProductRepresentation> getProductRepresentationMap(List<Long> productsIds) {
         return Objects.requireNonNull(productsClient.getAllProductsByIds(productsIds).getBody())
                 .stream()

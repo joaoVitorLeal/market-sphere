@@ -3,9 +3,7 @@ package io.github.joaoVitorLeal.marketsphere.orders.publisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.MessagingSerializationException;
-import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderRepresentationMapper;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.representation.OrderRepresentation;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderPaidEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,17 +21,17 @@ public class PaymentPublisher {
     @Value("${market-sphere.config.kafka.topics.paid-orders}")
     private String topic;
 
-    public void publish(OrderRepresentation orderRepresentation) {
-        log.info("publishing paid order with ID: {}", orderRepresentation.orderId());
+    public void publish(OrderPaidEvent orderPaidEvent) {
+        log.info("publishing paid order with ID: {}", orderPaidEvent.orderId());
         try {
-            String jsonPayload = objectMapper.writeValueAsString(orderRepresentation);
-            String orderIdKey = String.valueOf(orderRepresentation.orderId());
+            String jsonPayload = objectMapper.writeValueAsString(orderPaidEvent);
+            String orderIdKey = String.valueOf(orderPaidEvent.orderId());
             kafkaTemplate.send(topic, orderIdKey, jsonPayload);
         } catch (JsonProcessingException e) {
-            log.error("Error serializing message for paid-orders topic. Order ID: {}", orderRepresentation.orderId(), e);
+            log.error("Error serializing message for paid-orders topic. Order ID: {}", orderPaidEvent.orderId(), e);
             throw new MessagingSerializationException("Error serializing message for Kafka", e);
         } catch (RuntimeException e) {
-            log.error("Error sending message to paid-orders topic. Order ID: {}", orderRepresentation.orderId(), e);
+            log.error("Error sending message to paid-orders topic. Order ID: {}", orderPaidEvent.orderId(), e);
             throw e;
         }
     }
