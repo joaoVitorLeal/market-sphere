@@ -1,3 +1,4 @@
+src/main/java/io/github/joaoVitorLeal/marketsphere/billing/translator/MessageTranslator.java
 /src/main/resources/.env
 HELP.md
 target/
