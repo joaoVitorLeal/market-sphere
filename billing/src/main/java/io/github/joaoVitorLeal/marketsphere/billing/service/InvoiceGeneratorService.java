@@ -46,6 +46,7 @@ public class InvoiceGeneratorService {
             bucketService.upload(bucketFile);
             log.info("Generated invoice, file name: {}.", bucketFile.name());
 
+            // publicar evento no Kafka
             String invoiceUrl = bucketService.generatePresignedUrl(bucketFile.name());
             billingPublisher.publish(order, invoiceUrl);
 
