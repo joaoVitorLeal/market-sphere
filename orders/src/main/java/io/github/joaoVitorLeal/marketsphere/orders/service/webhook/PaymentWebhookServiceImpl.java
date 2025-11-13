@@ -1,12 +1,10 @@
-package io.github.joaoVitorLeal.marketsphere.orders.service.webhook.impl;
+package io.github.joaoVitorLeal.marketsphere.orders.service.webhook;
 
 import io.github.joaoVitorLeal.marketsphere.orders.dto.webhook.PaymentNotificationDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
-import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderRepository;
-import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
-import io.github.joaoVitorLeal.marketsphere.orders.service.webhook.PaymentWebhookService;
+import io.github.joaoVitorLeal.marketsphere.orders.service.OrderLifecycleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaymentWebhookServiceImpl implements PaymentWebhookService {
 
     private final OrderRepository orderRepository;
-    private final OrderService orderService; // Dependência de delegação
+    private final OrderLifecycleService orderLifecycleService; // Dependência de delegação
 
     @Transactional
     @Override
@@ -33,10 +31,9 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
                 });
 
         if (paymentNotificationDto.successful()) {
-            orderService.processSuccessfulPayment(existingOrder.getId());
+            orderLifecycleService.processSuccessfulPayment(existingOrder.getId());
         } else {
-            existingOrder.setStatus(OrderStatus.PAYMENT_ERROR);
-            existingOrder.setObservations(paymentNotificationDto.observations());
+            orderLifecycleService.processPaymentError(existingOrder, paymentNotificationDto.observations());
         }
     }
 }
