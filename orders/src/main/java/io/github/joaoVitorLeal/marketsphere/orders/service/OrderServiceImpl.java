@@ -1,18 +1,15 @@
 package io.github.joaoVitorLeal.marketsphere.orders.service;
 
-import io.github.joaoVitorLeal.marketsphere.orders.client.banking.BankingClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.banking.representation.BankingPaymentRepresentation;
-import io.github.joaoVitorLeal.marketsphere.orders.client.customers.CustomersClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.customers.representation.CustomerRepresentation;
-import io.github.joaoVitorLeal.marketsphere.orders.client.products.ProductsClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.representation.ProductRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderDetailsResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemDetailsResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
-import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.facade.OrderDependenciesFacade;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderDetailsMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderItemDetailsMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderMapper;
@@ -26,15 +23,12 @@ import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderRepository;
 import io.github.joaoVitorLeal.marketsphere.orders.validator.OrderValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,10 +41,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository repository;
     private final OrderItemRepository orderItemRepository;
     private final OrderValidator validator;
-    // Clients de Microsserviços
-    private final BankingClient bankingClient;
-    private final CustomersClient customersClient;
-    private final ProductsClient productsClient;
+    // Facade para os clients dos outros microservices
+    private final OrderDependenciesFacade orderDependenciesFacade;
     // Mappers
     private final OrderMapper mapper;
     private final OrderDetailsMapper orderDetailsMapper;
@@ -77,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.setStatus(OrderStatus.PLACED);
         existingOrder.setObservations(NEW_PAYMENT_OBSERVATION_MESSAGE);
 
-        BankingPaymentRepresentation bankingPaymentRepresentation = bankingClient.requestPayment(existingOrder);
+        BankingPaymentRepresentation bankingPaymentRepresentation = orderDependenciesFacade.requestPayment(existingOrder);
         existingOrder.setPaymentKey(bankingPaymentRepresentation.paymentKey());
     }
 
@@ -91,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDetailsResponseDto getOrderDetailsById(Long orderId) {
         Order existingOrder = this.findOrderById(orderId);
-        CustomerRepresentation existingCustomer = this.findCustomerRepresentation(existingOrder);
+        CustomerRepresentation existingCustomer = this.findCustomerRepresentation(existingOrder.getCustomerId());
         List<OrderItemDetailsResponseDto> orderItemDtos = this.getOrderItemDetailsDtos(existingOrder);
         return orderDetailsMapper.toOrderDetailsDto(existingOrder, existingCustomer, orderItemDtos);
     }
@@ -104,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void sendPaymentRequest(Order createdOrder) {
         // Atualizar o pedido com a chave de pagamento emitida pelo banco (simulação)
-        BankingPaymentRepresentation paymentRepresentation = bankingClient.requestPayment(createdOrder);
+        BankingPaymentRepresentation paymentRepresentation = orderDependenciesFacade.requestPayment(createdOrder);
         createdOrder.setPaymentKey(paymentRepresentation.paymentKey());
     }
 
@@ -114,14 +106,8 @@ public class OrderServiceImpl implements OrderService {
         return createdOrder;
     }
 
-    // TODO -> reduzir aclopamento estrurual para aclopamento de dados
-    private CustomerRepresentation findCustomerRepresentation(Order order) {
-        ResponseEntity<CustomerRepresentation> response = customersClient.getCustomerById(order.getCustomerId());
-        return Optional.ofNullable(response.getBody())
-                .orElseThrow( () -> {
-                   log.error("Customer service returned a null body (200 OK) for customerId: {}.", order.getCustomerId());
-                   return new CustomerClientNotFoundException("customerId", "Customer not found or returned an empty response for ID: " + order.getCustomerId());
-                });
+    private CustomerRepresentation findCustomerRepresentation(Long customerId) {
+        return orderDependenciesFacade.getCustomerRepresentationById(customerId);
     }
 
     // Helper para a API REST (Leitura)
@@ -135,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItem::getProductId)
                 .toList();
 
-        Map<Long, ProductRepresentation> productRepresentationMap = this.getProductRepresentationMap(productsIds);
+        Map<Long, ProductRepresentation> productRepresentationMap = orderDependenciesFacade.getProductRepresentationMap(productsIds);
 
         return order.getOrderItems()
                 .stream()
@@ -154,19 +140,5 @@ public class OrderServiceImpl implements OrderService {
                     return orderItemDetailsMapper.toOrderItemDetailsDto(orderItem, productRepresentation);
                 })
                 .toList();
-    }
-
-    // Buscar produtos por lista de IDs
-    private Map<Long, ProductRepresentation> getProductRepresentationMap(List<Long> productsIds) {
-        ResponseEntity<List<ProductRepresentation>> response = productsClient.getAllProductsByIds(productsIds);
-
-        List<ProductRepresentation> productRepresentations = Optional.ofNullable(response.getBody())
-                .orElse(Collections.emptyList());
-
-        return productRepresentations.stream()
-                .collect(Collectors.toMap(
-                        ProductRepresentation::id,
-                        productRepresentation -> productRepresentation
-                ));
     }
 }
