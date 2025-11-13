@@ -2,9 +2,9 @@ spring:
   application:
   name: billing
   kafka:
-    bootstrap-servers: http://${KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
-      group-id: ${KAFKA_CONSUMER_BILLED_GROUP_ID}
+      group-id: ${KAFKA_CONSUMER_GROUP_ID}
       auto-offset-reset: earliest # Para obter mensagens das mais antigas às mais novas. Isso evita perda de dados.
   output:
     ansi:
@@ -26,6 +26,6 @@ market-sphere:
 
 minio:
   url: http://${MINIO_HOST}:${MINIO_PORT}
-  access-key: ${ACCESS_KEY}
-  secret-key: ${SECRET_KEY}
-  bucket-name: ${BILLING_BUCKET}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: ${MINIO_BILLING_BUCKET}
