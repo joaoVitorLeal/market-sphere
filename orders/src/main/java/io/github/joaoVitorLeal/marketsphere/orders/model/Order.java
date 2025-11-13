@@ -34,6 +34,15 @@ public class Order implements Serializable {
     @Column(name = "order_date", nullable = false, updatable = false)
     private Instant orderDate;
 
+    @Column(name = "paid_at")
+    private Instant paidAt;
+
+    @Column(name = "billed_at")
+    private Instant billedAt;
+
+    @Column(name = "shipped_at")
+    private Instant shippedAt;
+
     @Column(name = "payment_key", columnDefinition = "TEXT")
     private String paymentKey;
 
