@@ -21,6 +21,7 @@ public class PaymentPublisher {
     @Value("${market-sphere.config.kafka.topics.paid-orders}")
     private String topic;
 
+    // Realiza a publicação do evento de pagamento no tópico do Kafka
     public void publish(OrderPaidEvent orderPaidEvent) {
         log.info("publishing paid order with ID: {}", orderPaidEvent.orderId());
         try {
