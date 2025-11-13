@@ -23,9 +23,11 @@ public class OrderValidator {
     private final CustomersClient customersClient;
 
     public void validate(OrderRequestDto orderRequestDto) {
-        Long customerId = orderRequestDto.customerId();
-        validateCustomer(customerId);
-        orderRequestDto.orderItems().forEach(this::validateOrderItem);
+        validateCustomer(orderRequestDto.customerId());
+        orderRequestDto.orderItems()
+                .stream()
+                .map(OrderItemRequestDto::productId)
+                .forEach(this::validateProduct);
     }
 
     private void validateCustomer(Long customerId) {
@@ -33,24 +35,34 @@ public class OrderValidator {
             ResponseEntity<CustomerRepresentation> response = customersClient.getCustomerById(customerId);
             CustomerRepresentation customerRepresentation = response.getBody();
 
-            assert customerRepresentation != null;
+            if (customerRepresentation == null) {
+                log.error("Customer service returned a null body (200 OK) for customer ID: {}.", customerId);
+                throw new CustomerClientNotFoundException("customerId", "Customer not found or returned an empty response for ID: " + customerId);
+            }
+
             log.info("Customer found with ID '{}' and name '{}'.", customerId, customerRepresentation.fullName());
+
         } catch (FeignException.NotFound e) {
+            log.error("Customer not found (404) via Feign client for customerId: {}. Message: {}", customerId, e.getMessage());
             throw new CustomerClientNotFoundException("customerId", "Customer not found with ID: " + customerId);
         }
-
-
     }
 
-    private void validateOrderItem(OrderItemRequestDto orderItemRequestDto) {
+    private void validateProduct(Long productId) {
         try {
-            ResponseEntity<ProductRepresentation> response = productsClient.getProductById(orderItemRequestDto.productId());
+            ResponseEntity<ProductRepresentation> response = productsClient.getProductById(productId);
             ProductRepresentation productRepresentation = response.getBody();
 
-            assert productRepresentation != null;
+            if (productRepresentation == null) {
+                log.error("Product service returned a null body (200 OK) for productId: {}.", productId);
+                throw new ProductClientNotFoundException("productId", "Product not found or returned an empty response for ID: " + productId);
+            }
+
             log.info("Product found with ID '{}' and name '{}'.", productRepresentation.id(), productRepresentation.name());
+
         } catch (FeignException.NotFound e) {
-            throw new ProductClientNotFoundException("productId", "Product not found with ID: " + orderItemRequestDto.productId());
+            log.error("Product not found (404) via Feign client for productId: {}. Message: {}", productId, e.getMessage());
+            throw new ProductClientNotFoundException("productId", "Product not found with ID: " + productId);
         }
     }
 }
