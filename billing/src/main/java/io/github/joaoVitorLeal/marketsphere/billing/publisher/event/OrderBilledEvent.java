@@ -1,9 +1,9 @@
 package io.github.joaoVitorLeal.marketsphere.billing.publisher.event;
 
-import io.github.joaoVitorLeal.marketsphere.billing.publisher.event.enums.OrderStatus;
+import java.time.Instant;
 
 public record OrderBilledEvent(
         Long orderId,
-        OrderStatus newOrderStatus,
-        String invoiceUrl
+        String invoiceUrl,
+        Instant billedAt
 ) { }
