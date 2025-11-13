@@ -11,5 +11,4 @@ public interface OrderService {
     void createPayment(Long orderId, String cardInfo, PaymentType paymentType);
     OrderResponseDto getOrderById(Long orderId);
     OrderDetailsResponseDto getOrderDetailsById(Long orderId);
-    void processSuccessfulPayment(Long orderId);
 }

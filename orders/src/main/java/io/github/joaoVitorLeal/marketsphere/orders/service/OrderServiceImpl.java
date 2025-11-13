@@ -1,4 +1,4 @@
-package io.github.joaoVitorLeal.marketsphere.orders.service.impl;
+package io.github.joaoVitorLeal.marketsphere.orders.service;
 
 import io.github.joaoVitorLeal.marketsphere.orders.client.banking.BankingClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.banking.representation.BankingPaymentRepresentation;
@@ -11,6 +11,8 @@ import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderItemDetailsResponseD
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderDetailsMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderItemDetailsMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.mapper.OrderMapper;
@@ -19,27 +21,24 @@ import io.github.joaoVitorLeal.marketsphere.orders.model.OrderItem;
 import io.github.joaoVitorLeal.marketsphere.orders.model.PaymentInfo;
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.PaymentType;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.PaymentPublisher;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderItemPayloadMapper;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderPaidEventMapper;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderItemPayload;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderPaidEvent;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderItemRepository;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderRepository;
-import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
 import io.github.joaoVitorLeal.marketsphere.orders.validator.OrderValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     private static final String NEW_PAYMENT_OBSERVATION_MESSAGE = "New payment made. Awaiting processing.";
@@ -56,10 +55,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper mapper;
     private final OrderDetailsMapper orderDetailsMapper;
     private final OrderItemDetailsMapper orderItemDetailsMapper;
-    private final OrderPaidEventMapper orderPaidEventMapper;
-    private final OrderItemPayloadMapper orderItemPayloadMapper;
-    // Kafka Publisher
-    private final PaymentPublisher paymentPublisher;
 
     @Transactional
     @Override
@@ -67,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
         validator.validate(orderRequestDto);
         Order createdOrder = performPersistence(orderRequestDto);
 
-        sendPaymentRequest(createdOrder);
+        this.sendPaymentRequest(createdOrder);
         return mapper.toOrderDto(createdOrder);
     }
 
@@ -101,19 +96,6 @@ public class OrderServiceImpl implements OrderService {
         return orderDetailsMapper.toOrderDetailsDto(existingOrder, existingCustomer, orderItemDtos);
     }
 
-    @Transactional
-    @Override
-    public void processSuccessfulPayment(Long orderId) {
-        Order existingOrder = this.findOrderById(orderId);
-        existingOrder.setStatus(OrderStatus.PAID);
-
-        CustomerRepresentation existingCustomer = this.findCustomerRepresentation(existingOrder);
-        List<OrderItemPayload> orderItemRepresentations = this.getOrderItemPayload(existingOrder);
-        OrderPaidEvent orderPaidEvent = orderPaidEventMapper.toOrderEvent(existingOrder, existingCustomer, orderItemRepresentations);
-
-        paymentPublisher.publish(orderPaidEvent);
-    }
-
     // ---- MÉTODOS PRIVADOS (helpers) ---- //
     private Order findOrderById(Long orderId) {
         return repository.findById(orderId)
@@ -132,8 +114,14 @@ public class OrderServiceImpl implements OrderService {
         return createdOrder;
     }
 
+    // TODO -> reduzir aclopamento estrurual para aclopamento de dados
     private CustomerRepresentation findCustomerRepresentation(Order order) {
-        return customersClient.getCustomerById(order.getCustomerId()).getBody();
+        ResponseEntity<CustomerRepresentation> response = customersClient.getCustomerById(order.getCustomerId());
+        return Optional.ofNullable(response.getBody())
+                .orElseThrow( () -> {
+                   log.error("Customer service returned a null body (200 OK) for customerId: {}.", order.getCustomerId());
+                   return new CustomerClientNotFoundException("customerId", "Customer not found or returned an empty response for ID: " + order.getCustomerId());
+                });
     }
 
     // Helper para a API REST (Leitura)
@@ -142,46 +130,43 @@ public class OrderServiceImpl implements OrderService {
             return Collections.emptyList();
         }
 
-        List<Long> productsIds = order.getOrderItems().stream().map(OrderItem::getProductId).toList();
+        List<Long> productsIds = order.getOrderItems()
+                .stream()
+                .map(OrderItem::getProductId)
+                .toList();
+
         Map<Long, ProductRepresentation> productRepresentationMap = this.getProductRepresentationMap(productsIds);
 
         return order.getOrderItems()
                 .stream()
                 .map(orderItem -> {
                     ProductRepresentation productRepresentation = productRepresentationMap.get(orderItem.getProductId());
+
+                    if (productRepresentation == null) {
+                        log.error(
+                                "Data integrity failure: Product ID {} (from Order ID: {}) not found in 'products' service during details request.",
+                                orderItem.getProductId(), order.getId()
+                        );
+                        throw new ProductClientNotFoundException("productId", "Product with ID " + orderItem.getProductId() + " not found (orphaned data).");
+                    }
+
                     // Usa o mapper da API
                     return orderItemDetailsMapper.toOrderItemDetailsDto(orderItem, productRepresentation);
                 })
                 .toList();
     }
 
-    // Helper para o KAFKA (Evento)
-    private List<OrderItemPayload> getOrderItemPayload(Order order) {
-        List<Long> productsIds = order.getOrderItems()
-                .stream()
-                .map(OrderItem::getProductId)
-                .toList();
-
-        if (productsIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        Map<Long, ProductRepresentation> productRepresentationMap = this.getProductRepresentationMap(productsIds);
-
-        return order.getOrderItems()
-                .stream()
-                .map(orderItem -> {
-                    ProductRepresentation productRepresentation = productRepresentationMap.get(orderItem.getProductId());
-                    return orderItemPayloadMapper.toOrderItemPayload(orderItem, productRepresentation);
-                })
-                .toList();
-    }
-
-    // Buscar produtos
+    // Buscar produtos por lista de IDs
     private Map<Long, ProductRepresentation> getProductRepresentationMap(List<Long> productsIds) {
-        return Objects.requireNonNull(productsClient.getAllProductsByIds(productsIds).getBody())
-                .stream()
-                .collect(Collectors.toMap(ProductRepresentation::id, productRepresentation -> productRepresentation));
-    }
+        ResponseEntity<List<ProductRepresentation>> response = productsClient.getAllProductsByIds(productsIds);
 
+        List<ProductRepresentation> productRepresentations = Optional.ofNullable(response.getBody())
+                .orElse(Collections.emptyList());
+
+        return productRepresentations.stream()
+                .collect(Collectors.toMap(
+                        ProductRepresentation::id,
+                        productRepresentation -> productRepresentation
+                ));
+    }
 }
