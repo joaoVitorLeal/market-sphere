@@ -24,7 +24,9 @@ public class OrderController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createOrder(@RequestBody @Valid OrderRequestDto orderRequestDto) {
         return ResponseEntity
-                .created(HeaderLocationBuilder.build(service.createOrder(orderRequestDto).id()))
+                .created(HeaderLocationBuilder.build(
+                        service.createOrder(orderRequestDto).id()
+                ))
                 .build();
     }
 
