@@ -1,4 +1,4 @@
-package io.github.joaoVitorLeal.marketsphere.billing.mapper;
+package io.github.joaoVitorLeal.marketsphere.billing.subscriber.mapper;
 
 import io.github.joaoVitorLeal.marketsphere.billing.model.Address;
 import io.github.joaoVitorLeal.marketsphere.billing.model.Customer;

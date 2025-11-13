@@ -3,7 +3,7 @@ package io.github.joaoVitorLeal.marketsphere.billing.subscriber;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.joaoVitorLeal.marketsphere.billing.exception.OrderProcessingException;
-import io.github.joaoVitorLeal.marketsphere.billing.mapper.OrderMapper;
+import io.github.joaoVitorLeal.marketsphere.billing.subscriber.mapper.OrderMapper;
 import io.github.joaoVitorLeal.marketsphere.billing.model.Order;
 import io.github.joaoVitorLeal.marketsphere.billing.service.InvoiceGeneratorService;
 import io.github.joaoVitorLeal.marketsphere.billing.subscriber.event.PaidOrderEvent;
