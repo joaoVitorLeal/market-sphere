@@ -1,12 +1,11 @@
 package io.github.joaoVitorLeal.marketsphere.orders.facade;
 
+import io.github.joaoVitorLeal.marketsphere.orders.client.banking.BankingClient;
 import io.github.joaoVitorLeal.marketsphere.orders.client.banking.representation.BankingPaymentRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.client.customers.representation.CustomerRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.representation.ProductRepresentation;
-import io.github.joaoVitorLeal.marketsphere.orders.facade.client.BankingClientService;
 import io.github.joaoVitorLeal.marketsphere.orders.facade.client.CustomerClientService;
 import io.github.joaoVitorLeal.marketsphere.orders.facade.client.ProductClientService;
-import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,7 @@ public class OrderDependenciesFacadeImpl implements OrderDependenciesFacade {
     // Injeta as abstrações dos Serviços de Cliente
     private final CustomerClientService customerClientService;
     private final ProductClientService productClientService;
-    private final BankingClientService bankingClientService;
+    private final BankingClient bankingClient;
 
     @Override
     public CustomerRepresentation getCustomerById(Long customerId) {
@@ -43,7 +42,7 @@ public class OrderDependenciesFacadeImpl implements OrderDependenciesFacade {
     }
 
     @Override
-    public BankingPaymentRepresentation requestPayment(Order order) {
-        return bankingClientService.requestPayment(order);
+    public BankingPaymentRepresentation requestPayment(Long orderId) {
+        return bankingClient.requestPayment(orderId);
     }
 }
