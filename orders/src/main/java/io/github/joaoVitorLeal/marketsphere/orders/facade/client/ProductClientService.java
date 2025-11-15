@@ -21,8 +21,8 @@ public interface ProductClientService {
      * Retorna um Mapa<ID, Produto> de forma segura.
      * Trata 200 OK + body nulo, retornando um mapa vazio se nenhum produto for encontrado.
      *
-     * @param productsIds A lista de IDs de produtos a serem buscados.
+     * @param productIds A lista de IDs de produtos a serem buscados.
      * @return Um Mapa onde a chave é o ID do produto e o valor é a representação.
      */
-    Map<Long, ProductRepresentation> getProductRepresentationMap(List<Long> productIds);
+    Map<Long, ProductRepresentation> getProductsByIds(List<Long> productIds);
 }

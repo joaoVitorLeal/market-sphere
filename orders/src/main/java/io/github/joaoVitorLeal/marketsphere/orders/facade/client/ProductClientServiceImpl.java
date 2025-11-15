@@ -39,7 +39,7 @@ public class ProductClientServiceImpl implements ProductClientService {
     }
 
     @Override
-    public Map<Long, ProductRepresentation> getProductRepresentationMap(List<Long> productIds) {
+    public Map<Long, ProductRepresentation> getProductsByIds(List<Long> productIds) {
         if (productIds == null || productIds.isEmpty()) {
             return Collections.emptyMap();
         }
