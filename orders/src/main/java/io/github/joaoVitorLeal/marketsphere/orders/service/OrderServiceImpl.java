@@ -107,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private CustomerRepresentation findCustomerRepresentation(Long customerId) {
-        return orderDependenciesFacade.getCustomerRepresentationById(customerId);
+        return orderDependenciesFacade.getCustomerById(customerId);
     }
 
     // Helper para a API REST (Leitura)
@@ -121,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItem::getProductId)
                 .toList();
 
-        Map<Long, ProductRepresentation> productRepresentationMap = orderDependenciesFacade.getProductRepresentationMap(productsIds);
+        Map<Long, ProductRepresentation> productRepresentationMap = orderDependenciesFacade.getProductsByIds(productsIds);
 
         return order.getOrderItems()
                 .stream()
