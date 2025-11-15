@@ -13,11 +13,11 @@ import java.util.Map;
 /**
  * Facade principal e interface de alto nível para o domínio de Pedidos.
  *
- * Atua como um ponto de entrada único para as dependências de microsserviços
- * externos: Produtos e Clientes.
+ * Centraliza o acesso aos microsserviços de Produtos e Clientes,
+ * além da integração com gateway de pagamentos (simulado).
  *
- * Isola a lógica de domínio da complexidade de infraestrutura, como chamadas
- * de Feign clients, tratamento de erros de rede e lógica de robustez.
+ * Isola o domínio da complexidade de infraestrutura, como chamadas
+ * a Feign clients, tratamento de erros de rede e lógica de integração.
  */
 public interface OrderDependenciesFacade {
 
