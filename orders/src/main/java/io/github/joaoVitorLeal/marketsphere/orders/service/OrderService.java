@@ -8,7 +8,7 @@ import io.github.joaoVitorLeal.marketsphere.orders.model.enums.PaymentType;
 public interface OrderService {
 
     OrderResponseDto createOrder(OrderRequestDto orderRequestDto);
-    void createPayment(Long orderId, String cardInfo, PaymentType paymentType);
+    void initiatePayment(Long orderId, String cardInfo, PaymentType paymentType);
     OrderResponseDto getOrderById(Long orderId);
     OrderDetailsResponseDto getOrderDetailsById(Long orderId);
 }
