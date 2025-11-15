@@ -1,7 +1,6 @@
 package io.github.joaoVitorLeal.marketsphere.orders.client.banking;
 
 import io.github.joaoVitorLeal.marketsphere.orders.client.banking.representation.BankingPaymentRepresentation;
-import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -21,16 +20,17 @@ public class BankingClientMock implements BankingClient {
      * - Mensagem de sucesso genérica
      * - Timestamp atual
      *
-     * @param order o pedido a ser pago
+     * @param orderId ID do pedido a ser pago
      * @return {@link BankingPaymentRepresentation} contendo chave de pagamento, status, mensagem e timestamp
      */
     @Override
-    public BankingPaymentRepresentation requestPayment(Order order) {
-        log.info("Requesting payment for order ID {}.", order.getId());
+    public BankingPaymentRepresentation requestPayment(Long orderId) {
+        log.info("Requesting payment for order ID {}.", orderId);
+
         return new BankingPaymentRepresentation(
                 UUID.randomUUID().toString(),
                 HttpStatus.OK.value(),
-                "Payment request simulated successfully",
+                "Payment request simulated successfully for order ID: " + orderId,
                 Instant.now()
         );
     }
