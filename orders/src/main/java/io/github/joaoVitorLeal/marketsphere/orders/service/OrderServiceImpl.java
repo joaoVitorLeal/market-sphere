@@ -60,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public void createPayment(Long orderId, String metadata, PaymentType paymentType) {
+    public void initiatePayment(Long orderId, String metadata, PaymentType paymentType) {
         Order existingOrder = this.findOrderById(orderId);
 
         PaymentInfo paymentInfo = new PaymentInfo();
@@ -69,21 +69,21 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.setStatus(OrderStatus.PLACED);
         existingOrder.setObservations(NEW_PAYMENT_OBSERVATION_MESSAGE);
 
-        BankingPaymentRepresentation bankingPaymentRepresentation = orderDependenciesFacade.requestPayment(existingOrder);
+        BankingPaymentRepresentation bankingPaymentRepresentation = orderDependenciesFacade.requestPayment(existingOrder.getId());
         existingOrder.setPaymentKey(bankingPaymentRepresentation.paymentKey());
     }
 
     @Transactional(readOnly = true)
     @Override
     public OrderResponseDto getOrderById(Long orderId) {
-        return mapper.toOrderDto(this.findOrderById(orderId));
+        return mapper.toOrderDto( this.findOrderById(orderId) );
     }
 
     @Transactional(readOnly = true)
     @Override
     public OrderDetailsResponseDto getOrderDetailsById(Long orderId) {
         Order existingOrder = this.findOrderById(orderId);
-        CustomerRepresentation existingCustomer = this.findCustomerRepresentation(existingOrder.getCustomerId());
+        CustomerRepresentation existingCustomer = orderDependenciesFacade.getCustomerById(existingOrder.getCustomerId());
         List<OrderItemDetailsResponseDto> orderItemDtos = this.getOrderItemDetailsDtos(existingOrder);
         return orderDetailsMapper.toOrderDetailsDto(existingOrder, existingCustomer, orderItemDtos);
     }
@@ -96,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void sendPaymentRequest(Order createdOrder) {
         // Atualizar o pedido com a chave de pagamento emitida pelo banco (simulação)
-        BankingPaymentRepresentation paymentRepresentation = orderDependenciesFacade.requestPayment(createdOrder);
+        BankingPaymentRepresentation paymentRepresentation = orderDependenciesFacade.requestPayment(createdOrder.getId());
         createdOrder.setPaymentKey(paymentRepresentation.paymentKey());
     }
 
@@ -104,10 +104,6 @@ public class OrderServiceImpl implements OrderService {
         Order createdOrder = repository.save(mapper.toOrderEntity(orderRequestDto));
         orderItemRepository.saveAll(createdOrder.getOrderItems());
         return createdOrder;
-    }
-
-    private CustomerRepresentation findCustomerRepresentation(Long customerId) {
-        return orderDependenciesFacade.getCustomerById(customerId);
     }
 
     // Helper para a API REST (Leitura)
@@ -136,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
                         throw new ProductClientNotFoundException("productId", "Product with ID " + orderItem.getProductId() + " not found (orphaned data).");
                     }
 
-                    // Usa o mapper da API
+                    // Usa o mapper
                     return orderItemDetailsMapper.toOrderItemDetailsDto(orderItem, productRepresentation);
                 })
                 .toList();
