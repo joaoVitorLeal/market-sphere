@@ -93,12 +93,20 @@ public class OrderLifecycleServiceImpl implements OrderLifecycleService {
             return Collections.emptyList();
         }
 
-        Map<Long, ProductRepresentation> productRepresentationMap = this.getProductRepresentationMap(productsIds);
+        Map<Long, ProductRepresentation> productRepresentations = orderDependenciesFacade.getProductsByIds(productsIds);
 
         return order.getOrderItems()
                 .stream()
                 .map(orderItem -> {
-                    ProductRepresentation productRepresentation = productRepresentationMap.get(orderItem.getProductId());
+                    ProductRepresentation productRepresentation = productRepresentations.get(orderItem.getProductId());
+
+                    if (productRepresentation == null) {
+                        log.error(
+                                "Data integrity failure: Product ID {} (from Order ID: {}) not found in 'products' service during event processing.",
+                                orderItem.getProductId(), order.getId()
+                        );
+                        throw new ProductClientNotFoundException("productId", "Product with ID " + orderItem.getProductId() + " not found (orphaned data).");
+                    }
                     return orderItemPayloadMapper.toOrderItemPayload(orderItem, productRepresentation);
                 })
                 .toList();
