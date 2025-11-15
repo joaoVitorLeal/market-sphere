@@ -41,7 +41,7 @@ public class OrderController {
             @Valid
             PaymentInfoRequestDto paymentRequestDto
     ) {
-        service.createPayment(
+        service.initiatePayment(
                 orderId,
                 paymentRequestDto.metadata(),
                 paymentRequestDto.paymentType()
