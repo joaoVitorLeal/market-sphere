@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Implementação da Facade principal.
- * Esta classe injeta os services dos clients (que contêm a lógica)
+ * Esta classe injeta os services dos clients (que contêm a lógica e validações)
  * e delega as chamadas para eles.
  */
 @Component
@@ -28,18 +28,18 @@ public class OrderDependenciesFacadeImpl implements OrderDependenciesFacade {
     private final BankingClientService bankingClientService;
 
     @Override
-    public CustomerRepresentation getCustomerRepresentationById(Long customerId) {
+    public CustomerRepresentation getCustomerById(Long customerId) {
         return customerClientService.getCustomerById(customerId);
     }
 
     @Override
-    public ProductRepresentation getProductRepresentationById(Long productId) {
+    public ProductRepresentation getProductById(Long productId) {
         return productClientService.getProductById(productId);
     }
 
     @Override
-    public Map<Long, ProductRepresentation> getProductRepresentationMap(List<Long> productIds) {
-        return productClientService.getProductRepresentationMap(productIds);
+    public Map<Long, ProductRepresentation> getProductsByIds(List<Long> productIds) {
+        return productClientService.getProductsByIds(productIds);
     }
 
     @Override
