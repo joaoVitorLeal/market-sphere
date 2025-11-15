@@ -25,13 +25,13 @@ public class OrderValidator {
     }
 
     private void validateCustomer(Long customerId) {
-        CustomerRepresentation customerRepresentation = orderDependenciesFacade.getCustomerRepresentationById(customerId);
+        CustomerRepresentation customerRepresentation = orderDependenciesFacade.getCustomerById(customerId);
         log.info("Customer found with ID '{}' and name {}.", customerRepresentation.id(), customerRepresentation.fullName());
 
     }
 
     private void validateProduct(Long productId) {
-        ProductRepresentation productRepresentation = orderDependenciesFacade.getProductRepresentationById(productId);
+        ProductRepresentation productRepresentation = orderDependenciesFacade.getProductById(productId);
         log.info("Product found with ID '{}' and name '{}'.", productRepresentation.id(), productRepresentation.name());
     }
 }
