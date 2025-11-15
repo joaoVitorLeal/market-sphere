@@ -5,7 +5,6 @@ import io.github.joaoVitorLeal.marketsphere.orders.client.customers.representati
 import io.github.joaoVitorLeal.marketsphere.orders.client.products.representation.ProductRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
-import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 
 import java.util.List;
 import java.util.Map;
@@ -50,8 +49,8 @@ public interface OrderDependenciesFacade {
     /**
      * <strong>(Simulação)</strong> Inicia uma solicitação de pagamento para um pedido específico.
      *
-     * @param order A entidade Order contendo os detalhes do pagamento.
+     * @param orderId ID do pedido do pagamento.
      * @return {@code BankingPaymentRepresentation} O resultado da solicitação de pagamento.
      */
-    BankingPaymentRepresentation requestPayment(Order order);
+    BankingPaymentRepresentation requestPayment(Long orderId);
 }
