@@ -1,0 +1,22 @@
+spring:
+  application:
+  name: shipping
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID}
+      auto-offset-reset: earliest
+  output:
+    ansi:
+      enabled: ALWAYS
+  messages:
+    basename: messages
+    encoding: UTF-8
+server:
+  port: ${SERVER_PORT}
+market-sphere:
+  config:
+    kafka:
+      topics:
+        billed-orders: ${KAFKA_TOPIC_BILLED_ORDERS}
+        shipped-orders: ${KAFKA_TOPIC_SHIPPED_ORDERS}
