@@ -105,6 +105,7 @@ public class OrderLifecycleServiceImpl implements OrderLifecycleService {
                                 "Data integrity failure: Product ID {} (from Order ID: {}) not found in 'products' service during event processing.",
                                 orderItem.getProductId(), order.getId()
                         );
+
                         throw new ProductClientNotFoundException("productId", "Product with ID " + orderItem.getProductId() + " not found (orphaned data).");
                     }
                     return orderItemPayloadMapper.toOrderItemPayload(orderItem, productRepresentation);
