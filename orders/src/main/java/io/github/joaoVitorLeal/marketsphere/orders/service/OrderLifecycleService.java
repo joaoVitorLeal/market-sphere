@@ -2,6 +2,7 @@ package io.github.joaoVitorLeal.marketsphere.orders.service;
 
 import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 import io.github.joaoVitorLeal.marketsphere.orders.subscriber.event.OrderBilledEvent;
+import io.github.joaoVitorLeal.marketsphere.orders.subscriber.event.OrderShippedEvent;
 
 /**
  * Serviço responsável por gerenciar o ciclo de vida de um Pedido.
@@ -30,10 +31,18 @@ public interface OrderLifecycleService {
     void processPaymentError(Order order, String observations);
 
     /**
-     * Processa um evento de pedido faturado (ex: vindo do Kafka).
+     * Processa um evento de pedido faturado vindo do Kafka.
      * Altera o status do pedido para BILLED.
      *
      * @param orderBilledEvent O evento contendo os dados do faturamento.
      */
     void processOrderBilled(OrderBilledEvent orderBilledEvent);
+
+    /**
+     * Processa um evento de pedido enviado vindo do Kafka.
+     * Altera o status do pedido para SHIPPED.
+     *
+     * @param orderShippedEvent O evento contendo os dados do envio.
+     */
+    void processOrderShipped(OrderShippedEvent orderShippedEvent);
 }
