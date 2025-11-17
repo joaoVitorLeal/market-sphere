@@ -6,7 +6,10 @@ import io.github.joaoVitorLeal.marketsphere.billing.bucket.exception.StorageAcce
 import io.github.joaoVitorLeal.marketsphere.billing.exception.InvoiceGenerationException;
 import io.github.joaoVitorLeal.marketsphere.billing.exception.OrderProcessingException;
 import io.github.joaoVitorLeal.marketsphere.billing.model.Order;
-import io.github.joaoVitorLeal.marketsphere.billing.publisher.BillingPublisher;
+import io.github.joaoVitorLeal.marketsphere.billing.publisher.OrderBillingPublisher;
+import io.github.joaoVitorLeal.marketsphere.billing.service.notification.EmailService;
+import io.github.joaoVitorLeal.marketsphere.billing.subscriber.event.OrderPaidEvent;
+import io.github.joaoVitorLeal.marketsphere.billing.subscriber.mapper.OrderMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -19,39 +22,62 @@ public class InvoiceGeneratorService {
 
     private final InvoiceService invoiceService;
     private final BucketService bucketService;
-    private final BillingPublisher billingPublisher;
+    private final OrderMapper orderMapper;
+    private final OrderBillingPublisher orderBillingPublisher;
+    private final EmailService emailService;
 
     public InvoiceGeneratorService(
-            InvoiceService invoiceService,
             BucketService bucketService,
-            BillingPublisher billingPublisher
+            InvoiceService invoiceService,
+            OrderMapper orderMapper,
+            OrderBillingPublisher orderBillingPublisher,
+            EmailService emailService
     ) {
-        this.invoiceService = invoiceService;
         this.bucketService = bucketService;
-        this.billingPublisher = billingPublisher;
+        this.invoiceService = invoiceService;
+        this.orderMapper = orderMapper;
+        this.orderBillingPublisher = orderBillingPublisher;
+        this.emailService = emailService;
     }
 
     public void generate(OrderPaidEvent orderPaidEvent) {
         log.info("Generating invoice for order with ID {}.", orderPaidEvent.orderId());
         try {
+            // Converter para o Order do domínio
+            Order order = orderMapper.toDomainModel(orderPaidEvent);
+
             // Gerar o array de bytes
             byte[] bytes = invoiceService.generateFromOrder(order);
 
             // Construir o bucketFile
             String fileName = String.format("invoice_order_%d.pdf", order.orderId());
-            BucketFile bucketFile = new BucketFile(fileName, new ByteArrayInputStream(bytes), MediaType.APPLICATION_PDF, bytes.length);
+            BucketFile bucketFile = new BucketFile(
+                    fileName,
+                    new ByteArrayInputStream(bytes),
+                    MediaType.APPLICATION_PDF,
+                    bytes.length
+            );
 
             // Realizar upload para cloud
             bucketService.upload(bucketFile);
             log.info("Generated invoice, file name: {}.", bucketFile.name());
 
-            // publicar evento no Kafka
+            // extrair a URL da fatura
             String invoiceUrl = bucketService.generatePresignedUrl(bucketFile.name());
-            billingPublisher.publish(order, invoiceUrl);
+
+            // AÇÃO NÃO-CRÍTICA
+            //Enviar email @Async
+            emailService.sendInvoiceEmailWithAttachment(order, fileName, invoiceUrl);
+
+            // AÇÃO CRÍTICA
+            // delegar a publicação do evento no Kafka ao Publish de faturamento
+            orderBillingPublisher.publish(order, invoiceUrl);
+
 
         } catch (InvoiceGenerationException | StorageAccessException e) {
-            log.error("Error in the invoice generation process: {}.", e.getMessage(), e);
-            throw new OrderProcessingException("Failed to process invoice for order ID: " + order.orderId(), e);
+            log.error("Error in the invoice generation process for order ID: {}. Error: {}",
+                    orderPaidEvent.orderId(), e.getMessage(), e);
+            throw new OrderProcessingException("Failed to process invoice for order ID: " + orderPaidEvent.orderId(), e);
         }
     }
 }
