@@ -14,7 +14,7 @@ import java.time.Instant;
 
 @Component
 @Slf4j
-public class BillingPublisher {
+public class OrderBillingPublisher {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
@@ -23,7 +23,7 @@ public class BillingPublisher {
     @Value("${market-sphere.config.kafka.topics.billed-orders}")
     private String topic;
 
-    public BillingPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
+    public OrderBillingPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
     }
