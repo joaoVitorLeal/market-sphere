@@ -1,3 +1,5 @@
+bucket/docs
+bucket/.env
 broker/.env
 broker/docker-compose-references.yml
 database/data

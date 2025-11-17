@@ -6,6 +6,7 @@ import io.github.joaoVitorLeal.marketsphere.orders.dto.error.ErrorResponseDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.error.ValidationErrorDto;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.MessagingSerializationException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.OrderNotFoundException;
+import io.github.joaoVitorLeal.marketsphere.orders.exception.ProductUnitPriceUnavailableException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.customers.CustomerClientNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.orders.exception.client.products.ProductClientNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -90,6 +91,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST.value())
                 .body(ErrorResponseDto.badRequest(message, httpRequest.getRequestURI()));
+    }
+
+    @ExceptionHandler(ProductUnitPriceUnavailableException.class)
+    public ResponseEntity<ErrorResponseDto> handleProductUnitPriceUnavailableException(
+            final ProductUnitPriceUnavailableException exception,
+            final HttpServletRequest httpRequest
+    ) {
+        log.error(
+                "Bad request at: [{}]: {}",
+                httpRequest.getRequestURI(),
+                exception.getMessage(),
+                exception
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST.value())
+                .body(ErrorResponseDto.badRequest(exception.getMessage(), httpRequest.getRequestURI()));
     }
 
     @ExceptionHandler(OrderNotFoundException.class)

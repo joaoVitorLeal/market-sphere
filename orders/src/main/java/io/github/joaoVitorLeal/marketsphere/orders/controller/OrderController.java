@@ -3,7 +3,6 @@ package io.github.joaoVitorLeal.marketsphere.orders.controller;
 import io.github.joaoVitorLeal.marketsphere.orders.controller.util.HeaderLocationBuilder;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.OrderRequestDto;
 import io.github.joaoVitorLeal.marketsphere.orders.dto.PaymentInfoRequestDto;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.representation.OrderRepresentation;
 import io.github.joaoVitorLeal.marketsphere.orders.service.OrderService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +24,9 @@ public class OrderController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createOrder(@RequestBody @Valid OrderRequestDto orderRequestDto) {
         return ResponseEntity
-                .created(HeaderLocationBuilder.build(service.createOrder(orderRequestDto).id()))
+                .created(HeaderLocationBuilder.build(
+                        service.createOrder(orderRequestDto).id()
+                ))
                 .build();
     }
 
@@ -40,7 +41,7 @@ public class OrderController {
             @Valid
             PaymentInfoRequestDto paymentRequestDto
     ) {
-        service.createPayment(
+        service.initiatePayment(
                 orderId,
                 paymentRequestDto.metadata(),
                 paymentRequestDto.paymentType()
@@ -59,7 +60,7 @@ public class OrderController {
             String view
     ) {
         if ("details".equalsIgnoreCase(view)) {
-            return ResponseEntity.ok(service.getOrderRepresentationById(orderId));
+            return ResponseEntity.ok(service.getOrderDetailsById(orderId));
         }
         return ResponseEntity.ok(service.getOrderById(orderId));
     }

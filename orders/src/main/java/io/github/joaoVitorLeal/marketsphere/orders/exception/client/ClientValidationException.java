@@ -7,11 +7,6 @@ public abstract class ClientValidationException extends RuntimeException {
 
     private final String field;
 
-    public ClientValidationException() {
-        super();
-        field = null;
-    }
-
     public ClientValidationException(String field, String message) {
         super(message);
         this.field = field;
