@@ -16,7 +16,6 @@ public class MinioProps {
     private String bucketName;
     private String url;
 
-
     public MinioProps() {
     }
 
