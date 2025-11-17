@@ -8,13 +8,15 @@ import io.github.joaoVitorLeal.marketsphere.orders.facade.OrderDependenciesFacad
 import io.github.joaoVitorLeal.marketsphere.orders.model.Order;
 import io.github.joaoVitorLeal.marketsphere.orders.model.OrderItem;
 import io.github.joaoVitorLeal.marketsphere.orders.model.enums.OrderStatus;
-import io.github.joaoVitorLeal.marketsphere.orders.publisher.PaymentPublisher;
+import io.github.joaoVitorLeal.marketsphere.orders.publisher.OrderPaymentPublisher;
 import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderItemPayload;
 import io.github.joaoVitorLeal.marketsphere.orders.publisher.event.OrderPaidEvent;
 import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderItemPayloadMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.publisher.mapper.OrderPaidEventMapper;
 import io.github.joaoVitorLeal.marketsphere.orders.repository.OrderRepository;
+import io.github.joaoVitorLeal.marketsphere.orders.service.notification.EmailService;
 import io.github.joaoVitorLeal.marketsphere.orders.subscriber.event.OrderBilledEvent;
+import io.github.joaoVitorLeal.marketsphere.orders.subscriber.event.OrderShippedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,26 +32,30 @@ import java.util.Map;
 @Slf4j
 public class OrderLifecycleServiceImpl implements OrderLifecycleService {
 
+    private static final String PAID_OBSERVATION_MESSAGE = "Payment successfully confirmed. Awaiting billing.";
+    private static final String BILLED_OBSERVATION_MESSAGE = "Order billed and invoice generated. Awaiting shipment.";
+    private static final String SHIPPED_OBSERVATION_MESSAGE = "Order has been shipped. Tracking code is now available.";
+
     // Repository
     private final OrderRepository repository;
-    // Clients de Microsserviços
+    // Facade
     private final OrderDependenciesFacade orderDependenciesFacade;
     // Mappers
     private final OrderPaidEventMapper orderPaidEventMapper;
     private final OrderItemPayloadMapper orderItemPayloadMapper;
     // Kafka Publisher
-    private final PaymentPublisher paymentPublisher;
+    private final OrderPaymentPublisher paymentPublisher;
+    // Service
+    private final EmailService emailService;
 
     @Transactional
     @Override
     public void processSuccessfulPayment(Long orderId) {
         Order existingOrder = this.findOrderById(orderId);
 
-        // Atualizar status do pedido
         existingOrder.setStatus(OrderStatus.PAID);
-
-        // Registrar o momento exato do pagamento
         existingOrder.setPaidAt(Instant.now());
+        existingOrder.setObservations(PAID_OBSERVATION_MESSAGE);
 
         CustomerRepresentation existingCustomer = orderDependenciesFacade.getCustomerById(existingOrder.getCustomerId());
         List<OrderItemPayload> orderItemRepresentations = this.getOrderItemPayload(existingOrder);
@@ -73,6 +79,33 @@ public class OrderLifecycleServiceImpl implements OrderLifecycleService {
         existingOrder.setStatus(OrderStatus.BILLED);
         existingOrder.setBilledAt(orderBilledEvent.billedAt());
         existingOrder.setInvoiceUrl(orderBilledEvent.invoiceUrl());
+        existingOrder.setObservations(BILLED_OBSERVATION_MESSAGE);
+    }
+
+    @Transactional
+    @Override
+    public void processOrderShipped(OrderShippedEvent orderShippedEvent) {
+
+        // Lógica CRITICA - Transacional
+        Order existingOrder = this.findOrderById(orderShippedEvent.orderId());
+        existingOrder.setStatus(OrderStatus.SHIPPED);
+        existingOrder.setShippedAt(orderShippedEvent.shippedAt());
+        existingOrder.setTrackingCode(orderShippedEvent.trackingCode());
+        existingOrder.setObservations(SHIPPED_OBSERVATION_MESSAGE);
+
+        // Lógica NÃO-CRITICA - Servico de notificação
+        try {
+            // buscar dados do cliente para o email
+            CustomerRepresentation customer = orderDependenciesFacade.getCustomerById(existingOrder.getCustomerId());
+
+            // Chama o méto-do assíncrono de envio de email
+            emailService.sendShipmentConfirmationEmail(customer, existingOrder);
+        } catch (Exception e) {
+            // Apenas loga o erro e NÃO relança a exceção.
+            // A transação CRITICA não será afetada.
+            log.error("Failed to send shipment confirmation email for order ID: {}. Error: {}",
+                    existingOrder.getId(), e.getMessage());
+        }
     }
 
     // ---- MÉTODOS PRIVADOS (helpers) ---- //
