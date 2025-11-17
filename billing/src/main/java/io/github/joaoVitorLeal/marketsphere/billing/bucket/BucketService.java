@@ -2,15 +2,17 @@ package io.github.joaoVitorLeal.marketsphere.billing.bucket;
 
 import io.github.joaoVitorLeal.marketsphere.billing.bucket.exception.StorageAccessException;
 import io.github.joaoVitorLeal.marketsphere.billing.config.props.MinioProps;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
 import io.minio.http.Method;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class BucketService {
 
     private final MinioClient minioClient;
@@ -34,12 +36,13 @@ public class BucketService {
                     .build();
             minioClient.putObject(objectArgs); // Adicionar objetos ao bucket
         } catch (Exception e) {
+            log.error("MINIO UPLOAD FAILED! Root cause: ", e);
             throw new StorageAccessException("Failed to upload file: " + file.name(), e);
         }
     }
 
     /**
-     *  Retorna a url para se obter o arquivo
+     *  Retorna a url para se obter o arquivo LOCALMENTE
      * */
     public String generatePresignedUrl(String fileName) {
         final int expiryTimeInDays = 5;
@@ -53,6 +56,43 @@ public class BucketService {
            return minioClient.getPresignedObjectUrl(presignedObjectUrlArgs);
         } catch (Exception e) {
             throw new StorageAccessException("Failed to generate presigned URL for file: " + fileName, e);
+        }
+    }
+
+    /**
+     * Baixa um arquivo do bucket.
+     * Este méto-do busca os metadados e o stream do arquivo.
+     *
+     * @param fileName O nome do objeto no bucket.
+     * @return Um {@link BucketFile} contendo o stream e os metadados.
+     */
+    public final BucketFile download(final String fileName) {
+        try {
+            // Buscar metadados
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(minioProps.getBucketName())
+                            .object(fileName)
+                            .build()
+            );
+
+            long size = stat.size();
+            MediaType mediaType = MediaType.parseMediaType(stat.contentType());
+
+            // Buscar o arquivo
+            InputStream inputStream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioProps.getBucketName())
+                            .object(fileName)
+                            .build()
+            );
+
+            // Retorna o objeto combinado do cloud bucket
+            return new BucketFile(fileName, inputStream, mediaType, size);
+
+        } catch (Exception e) {
+            log.error("Failed to download file {}. Error: {}. Reason: {}.", fileName, e.getMessage(), e.getCause(), e);
+            throw new StorageAccessException("Failed to download file: " + fileName, e);
         }
     }
 }
