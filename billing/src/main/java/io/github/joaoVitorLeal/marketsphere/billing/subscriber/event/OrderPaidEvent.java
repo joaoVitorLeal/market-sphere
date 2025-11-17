@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-public record PaidOrderEvent(
+public record OrderPaidEvent(
         Long orderId,
         CustomerPayload customer,
         Instant orderDate,
