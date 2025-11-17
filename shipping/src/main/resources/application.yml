@@ -5,7 +5,7 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP_ID}
-      auto-offset-reset: earliest
+      auto-offset-reset: latest
   output:
     ansi:
       enabled: ALWAYS
