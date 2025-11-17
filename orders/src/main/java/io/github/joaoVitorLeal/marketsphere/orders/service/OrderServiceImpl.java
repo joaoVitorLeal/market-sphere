@@ -35,13 +35,13 @@ import java.util.Map;
 @Slf4j
 public class OrderServiceImpl implements OrderService {
 
-    private static final String NEW_PAYMENT_OBSERVATION_MESSAGE = "New payment made. Awaiting processing.";
+    private static final String INITIATE_PAYMENT_OBSERVATION_MESSAGE = "New payment made. Awaiting processing.";
 
     // Repositories e Validator do domínio
     private final OrderRepository repository;
     private final OrderItemRepository orderItemRepository;
     private final OrderValidator validator;
-    // Facade para os clients dos outros microservices
+    // Facade
     private final OrderDependenciesFacade orderDependenciesFacade;
     // Mappers
     private final OrderMapper mapper;
@@ -67,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
         paymentInfo.setPaymentType(paymentType);
         paymentInfo.setMetadata(metadata);
         existingOrder.setStatus(OrderStatus.PLACED);
-        existingOrder.setObservations(NEW_PAYMENT_OBSERVATION_MESSAGE);
+        existingOrder.setObservations(INITIATE_PAYMENT_OBSERVATION_MESSAGE);
 
         BankingPaymentRepresentation bankingPaymentRepresentation = orderDependenciesFacade.requestPayment(existingOrder.getId());
         existingOrder.setPaymentKey(bankingPaymentRepresentation.paymentKey());
