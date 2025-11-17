@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PaymentPublisher {
+public class OrderPaymentPublisher {
 
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
