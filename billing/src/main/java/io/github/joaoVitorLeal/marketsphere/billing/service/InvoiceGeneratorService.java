@@ -31,9 +31,8 @@ public class InvoiceGeneratorService {
         this.billingPublisher = billingPublisher;
     }
 
-    public void generate(Order order) {
-        log.info("Generating invoice for order with ID {}.", order.orderId());
-
+    public void generate(OrderPaidEvent orderPaidEvent) {
+        log.info("Generating invoice for order with ID {}.", orderPaidEvent.orderId());
         try {
             // Gerar o array de bytes
             byte[] bytes = invoiceService.generateFromOrder(order);
