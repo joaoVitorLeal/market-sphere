@@ -6,6 +6,17 @@ spring:
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP_ID}
       auto-offset-reset: earliest # Para obter mensagens das mais antigas às mais novas. Isso evita perda de dados.
+  mail:
+    host: ${SPRING_MAIL_HOST}
+    port: ${SPRING_MAIL_PORT}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   output:
     ansi:
       enabled: ALWAYS
@@ -25,7 +36,8 @@ market-sphere:
         shipped-orders: ${KAFKA_TOPIC_SHIPPED_ORDERS}
 
 minio:
-  url: http://${MINIO_HOST}:${MINIO_PORT}
+  url: ${MINIO_ENDPOINT_URL}
   access-key: ${MINIO_ACCESS_KEY}
   secret-key: ${MINIO_SECRET_KEY}
   bucket-name: ${MINIO_BILLING_BUCKET}
+#  url: ${MINIO_HOST}:${MINIO_PORT}
