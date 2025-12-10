@@ -53,7 +53,8 @@ public class CustomerMapper {
                 addressVo.getNeighborhood(), // Pode ser nulo
                 addressVo.getCity(),
                 addressVo.getState(),
-                addressVo.getCountry()
+                addressVo.getCountry(),
+                customer.isActive()
         );
     }
 
