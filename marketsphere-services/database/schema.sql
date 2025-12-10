@@ -80,7 +80,7 @@ create table orders (
 
 	constraint pk_orders_id primary key (id),
 	constraint chk_orders_status check (
-        status in ('PLACED', 'PAID', 'BILLED', 'SHIPPED', 'PAYMENT_ERROR', 'PREPARING_SHIPMENT', 'CANCELED')
+        status in ('PENDING', 'PLACED', 'PAID', 'BILLED', 'SHIPPED', 'PAYMENT_ERROR', 'PREPARING_SHIPMENT', 'CANCELED')
     )
 );
 
