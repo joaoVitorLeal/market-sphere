@@ -43,8 +43,33 @@ public class ProductController {
             @RequestParam(value = "productsIds", required = false) List<Long> productsIds
     ) {
         if (productsIds != null && !productsIds.isEmpty()) {
-            return ResponseEntity.ok(service.getAllProductsByIds(productsIds));
+            return ResponseEntity.ok(service.getAllProductsByIdsIgnoringFilter(productsIds));
         }
         return ResponseEntity.ok(service.getAllProducts());
+    }
+
+    /**
+     * Realiza a exclusão lógica de um produto
+     * @param productId ID do produto a ser inativado
+     * @return {@code HTTP Status 204 - No Content} se bem-sucedido
+     * */
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProductById(
+            @PathVariable @Positive(message = "{product.id.positive}") Long productId
+    ) {
+        service.deleteProductById(productId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Reativa um produto lógicamente excluído
+     * @param productId ID do produto a ser reativado
+     * */
+    @PostMapping("/{productId}/reactivate")
+    public ResponseEntity<Void> reactivateProductById(
+            @PathVariable @Positive(message = "{product.id.positive}") Long productId
+    ) {
+        service.reactivateProductById(productId);
+        return ResponseEntity.noContent().build();
     }
 }
