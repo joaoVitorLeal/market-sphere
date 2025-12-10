@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Component
 @Slf4j
-public class BankingClientMock implements BankingClient {
+public class MockBankingClient implements BankingClient {
 
     /**
      * Simula uma solicitação de pagamento a um gateway bancário.
