@@ -2,6 +2,7 @@ package io.github.joaoVitorLeal.marketsphere.billing.service;
 
 import io.github.joaoVitorLeal.marketsphere.billing.exception.InvoiceGenerationException;
 import io.github.joaoVitorLeal.marketsphere.billing.model.Order;
+import io.github.joaoVitorLeal.marketsphere.billing.translator.MessageTranslator;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,9 @@ public class InvoiceService {
     private static final String DATE_PATTERN_PT_BR = "dd/MM/yyyy HH:mm:ss";
     private static final String LOCALE_TAG_PT_BR = "pt_BR";
     private static final String ZONE_ID_SAO_PAULO = "America/Sao_Paulo";
+    private static final String ORDER_BILLED_OBSERVATION_MESSAGE_KEY = "order.billed.awaiting.shipment";
+
+    private final MessageTranslator messageTranslator;
 
     // Resource → Objeto utilizado quando é necessário injetar algum recurso da pasta resources no código.
     @Value("classpath:reports/invoice.jrxml")
@@ -31,8 +35,14 @@ public class InvoiceService {
     @Value("classpath:reports/ms-logo.png")
     private Resource logo;
 
+    public InvoiceService(MessageTranslator messageTranslator) {
+        this.messageTranslator = messageTranslator;
+    }
+
     public byte[] generateFromOrder(Order order) {
         try (InputStream inputStream = invoice.getInputStream()) {
+
+            String translatedObservation = messageTranslator.translate(ORDER_BILLED_OBSERVATION_MESSAGE_KEY);
 
             // Definindo os valores dos parâmetros que irão popular o Column Header do relatório
             Map<String, Object> params = new HashMap<>();
@@ -49,7 +59,7 @@ public class InvoiceService {
             params.put("STATE", order.customer().address().state());
             params.put("ORDER_ID", order.orderId());
             params.put("ORDER_DATE", this.formatDate(order.orderDate()));
-            params.put("ORDER_OBSERVATIONS", order.orderObservations() == null ? "" : order.orderObservations());
+            params.put("ORDER_OBSERVATIONS", translatedObservation);
             params.put("ORDER_TOTAL", order.total());
 
             // Passando a logo
