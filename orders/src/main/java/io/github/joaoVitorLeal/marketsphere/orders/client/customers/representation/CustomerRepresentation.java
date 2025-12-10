@@ -13,5 +13,6 @@ public record CustomerRepresentation(
         String neighborhood,
         String city,
         String state,
-        String country
+        String country,
+        boolean active
 ) { }
