@@ -4,11 +4,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "products")
+@SQLDelete(sql = "UPDATE products SET active = false WHERE id = ?")
+@SQLRestriction("active = true")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
