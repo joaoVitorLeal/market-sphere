@@ -1,11 +1,10 @@
-package io.github.joaoVitorLeal.marketsphere.products.service.impl;
+package io.github.joaoVitorLeal.marketsphere.products.service;
 
 import io.github.joaoVitorLeal.marketsphere.products.exception.ProductNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.products.dto.ProductRequestDto;
 import io.github.joaoVitorLeal.marketsphere.products.dto.ProductResponseDto;
 import io.github.joaoVitorLeal.marketsphere.products.model.Product;
 import io.github.joaoVitorLeal.marketsphere.products.repository.ProductRepository;
-import io.github.joaoVitorLeal.marketsphere.products.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,15 +22,27 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto createProduct(ProductRequestDto productRequestDto) {
         Product product = new Product(productRequestDto.name(), productRequestDto.unitPrice(), productRequestDto.description());
         repository.save(product);
-        return new ProductResponseDto(product.getId(), product.getName(), product.getUnitPrice(), product.getDescription());
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getUnitPrice(),
+                product.getDescription(),
+                product.isActive()
+        );
     }
 
     @Transactional(readOnly = true)
     @Override
     public ProductResponseDto getProductById(Long productId) {
         Product product = repository.findById(productId)
-                .orElseThrow( ()-> new ProductNotFoundException(productId) );
-        return new ProductResponseDto(product.getId(), product.getName(), product.getUnitPrice(), product.getDescription());
+                .orElseThrow( () -> new ProductNotFoundException(productId) );
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getUnitPrice(),
+                product.getDescription(),
+                product.isActive()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -43,22 +54,41 @@ public class ProductServiceImpl implements ProductService {
                         product.getId(),
                         product.getName(),
                         product.getUnitPrice(),
-                        product.getDescription()
+                        product.getDescription(),
+                        product.isActive()
                 ))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<ProductResponseDto> getAllProductsByIds(List<Long> productsIds) {
-        return repository.findAllById(productsIds)
+    public List<ProductResponseDto> getAllProductsByIdsIgnoringFilter(List<Long> productsIds) {
+        return repository.findProductsByIdsIgnoringFilter(productsIds)
                 .stream()
                 .map(product -> new ProductResponseDto(
                         product.getId(),
                         product.getName(),
                         product.getUnitPrice(),
-                        product.getDescription()
+                        product.getDescription(),
+                        product.isActive()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    @Override
+    public void deleteProductById(Long productId) {
+        if (!repository.existsById(productId)) {
+            throw new ProductNotFoundException(productId);
+        }
+        repository.deleteById(productId);
+    }
+
+    @Transactional
+    @Override
+    public void reactivateProductById(Long productId) {
+        Product productToReactivate = repository.findInactiveById(productId)
+                .orElseThrow( () -> new ProductNotFoundException("Inactive product with ID " + productId + " not found.") );
+        productToReactivate.setActive(true);
     }
 }
