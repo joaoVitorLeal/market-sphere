@@ -59,3 +59,14 @@ market-sphere:
         paid-orders: ${KAFKA_TOPIC_PAID_ORDERS}
         billed-orders: ${KAFKA_TOPIC_BILLED_ORDERS}
         shipped-orders: ${KAFKA_TOPIC_SHIPPED_ORDERS}
+  internal-services:
+    customers:
+      config:
+        security:
+          api-key: ${CUSTOMERS_SERVICE_API_KEY_FOR_ORDERS}
+  external-services:
+      banking:
+        mock-bank:
+          base-url: ${INCOMING...}
+          api-key: ${MOCK_BANK_CLIENT_KEY}
+          webhook-secret: ${MOCK_BANK_WEBHOOK_SECRET}
