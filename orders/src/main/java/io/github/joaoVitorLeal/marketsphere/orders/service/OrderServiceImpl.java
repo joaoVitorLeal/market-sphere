@@ -35,6 +35,7 @@ import java.util.Map;
 @Slf4j
 public class OrderServiceImpl implements OrderService {
 
+    private static final String PENDING_PAYMENT_OBSERVATION_MESSAGE = "Created order. Awaiting payment.";
     private static final String INITIATE_PAYMENT_OBSERVATION_MESSAGE = "New payment made. Awaiting processing.";
 
     // Repositories e Validator do domínio
@@ -52,9 +53,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto createOrder(OrderRequestDto orderRequestDto) {
         validator.validate(orderRequestDto);
-        Order createdOrder = performPersistence(orderRequestDto);
-
-        this.sendPaymentRequest(createdOrder);
+        Order createdOrder = this.performPersistence(orderRequestDto);
         return mapper.toOrderDto(createdOrder);
     }
 
@@ -69,6 +68,7 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.setStatus(OrderStatus.PLACED);
         existingOrder.setObservations(INITIATE_PAYMENT_OBSERVATION_MESSAGE);
 
+        // Atualizar o pedido com a chave de pagamento emitida pelo banco (simulação)
         BankingPaymentRepresentation bankingPaymentRepresentation = orderDependenciesFacade.requestPayment(existingOrder.getId());
         existingOrder.setPaymentKey(bankingPaymentRepresentation.paymentKey());
     }
@@ -83,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDetailsResponseDto getOrderDetailsById(Long orderId) {
         Order existingOrder = this.findOrderById(orderId);
-        CustomerRepresentation existingCustomer = orderDependenciesFacade.getCustomerById(existingOrder.getCustomerId());
+        CustomerRepresentation existingCustomer = orderDependenciesFacade.getCustomerByIdIgnoringFilter(existingOrder.getCustomerId());
         List<OrderItemDetailsResponseDto> orderItemDtos = this.getOrderItemDetailsDtos(existingOrder);
         return orderDetailsMapper.toOrderDetailsDto(existingOrder, existingCustomer, orderItemDtos);
     }
@@ -94,19 +94,16 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
-    private void sendPaymentRequest(Order createdOrder) {
-        // Atualizar o pedido com a chave de pagamento emitida pelo banco (simulação)
-        BankingPaymentRepresentation paymentRepresentation = orderDependenciesFacade.requestPayment(createdOrder.getId());
-        createdOrder.setPaymentKey(paymentRepresentation.paymentKey());
-    }
-
     private Order performPersistence(OrderRequestDto orderRequestDto) {
-        Order createdOrder = repository.save(mapper.toOrderEntity(orderRequestDto));
-        orderItemRepository.saveAll(createdOrder.getOrderItems());
-        return createdOrder;
+        Order orderToPersist = mapper.toOrderEntity(orderRequestDto);
+        orderToPersist.setStatus(OrderStatus.PENDING);
+        orderToPersist.setObservations(PENDING_PAYMENT_OBSERVATION_MESSAGE);
+        Order persistedOrder = repository.save(orderToPersist);
+        orderItemRepository.saveAll(persistedOrder.getOrderItems());
+        return persistedOrder;
     }
 
-    // Helper para a API REST (Leitura)
+    // Helper para a API REST (Leitura de detalhada)
     private List<OrderItemDetailsResponseDto> getOrderItemDetailsDtos(Order order) {
         if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
             return Collections.emptyList();
@@ -123,7 +120,6 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(orderItem -> {
                     ProductRepresentation productRepresentation = productRepresentationMap.get(orderItem.getProductId());
-
                     if (productRepresentation == null) {
                         log.error(
                                 "Data integrity failure: Product ID {} (from Order ID: {}) not found in 'products' service during details request.",
@@ -131,8 +127,6 @@ public class OrderServiceImpl implements OrderService {
                         );
                         throw new ProductClientNotFoundException("productId", "Product with ID " + orderItem.getProductId() + " not found (orphaned data).");
                     }
-
-                    // Usa o mapper
                     return orderItemDetailsMapper.toOrderItemDetailsDto(orderItem, productRepresentation);
                 })
                 .toList();
