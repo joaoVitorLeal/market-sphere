@@ -35,3 +35,8 @@ market-sphere:
     configs:
       connect-timeout: 5000
       read-timeout: 5000
+  internal-services:
+    orders:
+      config:
+        security:
+          api-key: ${ORDERS_SERVICE_API_KEY}
