@@ -22,14 +22,28 @@ public class CustomerClientServiceImpl implements CustomerClientService {
     public CustomerRepresentation getCustomerById(Long customerId) {
         try {
             ResponseEntity<CustomerRepresentation> response = customersClient.getCustomerById(customerId);
-
             return Optional.ofNullable(response.getBody())
                     .orElseThrow(() -> {
-                        log.error("Customer service returned a null body (200 OK) for customerId: {}.", customerId);
+                        log.error("[Default] Customer service returned a null body (200 OK) for customerId: {}.", customerId);
                         return new CustomerClientNotFoundException("customerId", "Customer not found or returned an empty response for ID: " + customerId);
                     });
         } catch (FeignException.NotFound e) {
-            log.error("Customer not found (404) via Feign client for customer ID: {}. Message: {}", customerId, e.getMessage());
+            log.error("[Default] Customer not found (404) via Feign client for customer ID: {}. Message: {}", customerId, e.getMessage());
+            throw new CustomerClientNotFoundException("customerId", "Customer not found with ID: " + customerId);
+        }
+    }
+
+    @Override
+    public CustomerRepresentation getCustomerByIdIgnoringFilter(Long customerId) {
+        try {
+            ResponseEntity<CustomerRepresentation> response = customersClient.getCustomerByIdIgnoringFilter(customerId);
+            return Optional.ofNullable(response.getBody())
+                    .orElseThrow(() -> {
+                        log.error("[Ignoring Filter] Customer service returned a null body (200 OK) for customerId: {}.", customerId);
+                        return new CustomerClientNotFoundException("customerId", "Customer not found or returned an empty response for ID: " + customerId);
+                    });
+        } catch (FeignException.NotFound e) {
+            log.error("[Ignoring Filter] Customer not found (404) via Feign client for customer ID: {}. Message: {}", customerId, e.getMessage());
             throw new CustomerClientNotFoundException("customerId", "Customer not found with ID: " + customerId);
         }
     }
