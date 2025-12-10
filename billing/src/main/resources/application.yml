@@ -21,7 +21,7 @@ spring:
     ansi:
       enabled: ALWAYS
   messages:
-    basename: messages
+    basename: i18n/messages
     encoding: UTF-8
 
 server:
