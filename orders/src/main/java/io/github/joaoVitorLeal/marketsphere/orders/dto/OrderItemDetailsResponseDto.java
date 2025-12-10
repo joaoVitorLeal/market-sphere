@@ -6,7 +6,8 @@ public record OrderItemDetailsResponseDto(
         Long productId,
         String productName,
         Integer amount,
-        BigDecimal unitPrice
+        BigDecimal unitPrice,
+        boolean active
 ) {
 
     private BigDecimal getSubTotal() {
