@@ -6,5 +6,6 @@ public record ProductRepresentation(
     Long id,
     String name,
     BigDecimal unitPrice,
-    String description
+    String description,
+    boolean active
 ) { }
