@@ -53,4 +53,15 @@ public interface OrderDependenciesFacade {
      * @return {@code BankingPaymentRepresentation} O resultado da solicitação de pagamento.
      */
     BankingPaymentRepresentation requestPayment(Long orderId);
+
+    /**
+     * Busca dados de um cliente pelo seu ID, esteja ele ativo ou inativo.
+     *
+     * Destinado a cenários internos onde o status de exclusão lógica é irrelevante como o histórico.
+     *
+     * @param customerId O ID do cliente
+     * @return {@code CustomerRepresentation} cliente ativo ou inativo
+     * @throws CustomerClientNotFoundException Se o cliente não for encontrado
+     */
+    CustomerRepresentation getCustomerByIdIgnoringFilter(Long customerId);
 }
