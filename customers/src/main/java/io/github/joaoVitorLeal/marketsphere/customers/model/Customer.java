@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "customers",
@@ -35,4 +37,7 @@ public class Customer {
 
     @Embedded
     private Address addressVo;
+
+    @Column(nullable = false)
+    private boolean active = true;
 }
