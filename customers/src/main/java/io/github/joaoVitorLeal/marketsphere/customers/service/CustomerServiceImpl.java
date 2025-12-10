@@ -1,14 +1,13 @@
-package io.github.joaoVitorLeal.marketsphere.customers.service.impl;
+package io.github.joaoVitorLeal.marketsphere.customers.service;
 
 import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.BrasilApiClient;
+import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.representation.BrasilApiAddressRepresentation;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerRequestDto;
 import io.github.joaoVitorLeal.marketsphere.customers.dto.CustomerResponseDto;
-import io.github.joaoVitorLeal.marketsphere.customers.client.brasilapi.representation.BrasilApiAddressRepresentation;
 import io.github.joaoVitorLeal.marketsphere.customers.exception.CustomerNotFoundException;
 import io.github.joaoVitorLeal.marketsphere.customers.mapper.CustomerMapper;
 import io.github.joaoVitorLeal.marketsphere.customers.model.Customer;
 import io.github.joaoVitorLeal.marketsphere.customers.repository.CustomerRepository;
-import io.github.joaoVitorLeal.marketsphere.customers.service.CustomerService;
 import io.github.joaoVitorLeal.marketsphere.customers.validator.CustomerValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -59,7 +58,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new CustomerNotFoundException(customerId));
 
         validator.validateForUpdate(customerToUpdate, customerRequestDto);
-        // valida postalCode chamando Brasil API
+        // valida postalCode chamando Brasil API e utiliza os dados de endereço retornados para persistência
         BrasilApiAddressRepresentation brasilApiAddressRepresentation = brasilApiClient.getAddressByPostalCode(customerRequestDto.postalCode());
         mapper.updateCustomerEntity(customerToUpdate, customerRequestDto, brasilApiAddressRepresentation);
     }
@@ -71,5 +70,22 @@ public class CustomerServiceImpl implements CustomerService {
             throw new  CustomerNotFoundException(customerId);
         }
         repository.deleteById(customerId);
+    }
+
+    @Transactional
+    @Override
+    public void reactivateCustomerById(Long customerId) {
+        Customer customerToReactivate = repository.findInactiveById(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException("Inactive product with ID " + customerId + " not found."));
+        customerToReactivate.setActive(true);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CustomerResponseDto getCustomerByIdIgnoringFilter(Long customerId) {
+        return mapper.toCustomerDto(
+                repository.findByIdIgnoringFilter(customerId)
+                        .orElseThrow( () -> new CustomerNotFoundException(customerId))
+        );
     }
 }
