@@ -14,6 +14,8 @@ import org.hibernate.annotations.SQLRestriction;
             @UniqueConstraint(columnNames = "national_id"),
             @UniqueConstraint(columnNames = "email")
         })
+@SQLDelete(sql = "UPDATE customers SET active = false WHERE id = ?")
+@SQLRestriction("active = true")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
