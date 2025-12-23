@@ -31,7 +31,7 @@ public class Product {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean active = true;
 
     // Adapter to dto of request
