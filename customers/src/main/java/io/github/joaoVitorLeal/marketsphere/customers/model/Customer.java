@@ -40,6 +40,6 @@ public class Customer {
     @Embedded
     private Address addressVo;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean active = true;
 }
