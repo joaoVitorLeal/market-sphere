@@ -1,6 +1,6 @@
 spring:
   application:
-  name: orders
+    name: orders
   config:
     import: "optional:classpath:.env"
   datasource:
